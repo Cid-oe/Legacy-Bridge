@@ -1,0 +1,12 @@
+{
+  "name": "urlcodec",
+  "title": "URLCodec from Apache Commons Codec 1.3 (2005, real open-source code)",
+  "source": "src/main/java/org/apache/commons/codec/net/URLCodec.java",
+  "package": "org.apache.commons.codec.net",
+  "class": "URLCodec",
+  "test_dir": "src/test/java/org/apache/commons/codec/net",
+  "stakeholder": "systems that send raw bytes, form bodies and query strings through this codec (signed callback URLs, stored tokens, cache keys)",
+  "controls": ["URLCodecControlTest"],
+  "mutants": "mutants.json",
+  "origin": "https://repo.maven.apache.org/maven2/commons-codec/commons-codec/1.3/commons-codec-1.3-sources.jar (Apache License 2.0, unmodified)"
+}

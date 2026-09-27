@@ -1,0 +1,32 @@
+[
+  {
+    "id": "U1-high-bytes",
+    "quirk": "Bytes 0x80-0xFF are escaped one byte at a time (%FF), so arbitrary binary data round-trips",
+    "replacements": [["            if (b < 0) {\n                b = 256 + b;\n            }\n", ""]]
+  },
+  {
+    "id": "U2-ascii-input",
+    "quirk": "decode(String) reads its input as US-ASCII, so a raw non-ASCII character in the input becomes '?'",
+    "replacements": [["return new String(decode(pString.getBytes(StringEncodings.US_ASCII)), charset);", "return new String(decode(pString.getBytes(charset)), charset);"]]
+  },
+  {
+    "id": "U3-strict-hex",
+    "quirk": "A malformed escape such as %zz or %+1 throws DecoderException",
+    "replacements": [["                    if (u == -1 || l == -1) {", "                    if (false) {"]]
+  },
+  {
+    "id": "U4-truncated-escape",
+    "quirk": "A truncated escape at the end of the input (%2) throws DecoderException instead of being dropped",
+    "replacements": [["                } catch(ArrayIndexOutOfBoundsException e) {\n                    throw new DecoderException(\"Invalid URL encoding\");", "                } catch(ArrayIndexOutOfBoundsException e) {\n                    break;"]]
+  },
+  {
+    "id": "U5-null-passthrough",
+    "quirk": "String methods return null for a null input instead of throwing",
+    "replacements": [["        if (pString == null) {\n            return null;\n        }\n", ""]]
+  },
+  {
+    "id": "U6-space-as-plus",
+    "quirk": "A space is encoded as '+' (form encoding), not %20",
+    "replacements": [["        WWW_FORM_URL.set(' ');\n", ""]]
+  }
+]
