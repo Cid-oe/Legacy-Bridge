@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Legacy Bridge</title>
+<meta name="description" content="IBM Bob modernizes legacy Java; Bob's own characterization tests decide what ships.">
+<style>
+:root{--bg:#fbfbfa;--fg:#1d1d1b;--muted:#6b6b66;--card:#fff;--line:#e4e3de;--accent:#0f62fe;--ok:#1f7a4d;--okbg:#e5f4ec;--bad:#b3261e;--badbg:#fbe9e7}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1116;--fg:#e8eaed;--muted:#9aa1ab;--card:#161b22;--line:#2a313c;--accent:#78a9ff;--ok:#6fd3a0;--okbg:#17332a;--bad:#ff8a80;--badbg:#3a1d1b}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.6 system-ui,-apple-system,Segoe UI,sans-serif}
+main{max-width:980px;margin:0 auto;padding:40px 16px 72px}h1{font-size:44px;margin:0}h2{font-size:22px;margin:40px 0 12px}
+.sub{color:var(--muted);font-size:19px;margin:6px 0 24px}.accent{color:var(--accent)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 20px;margin:12px 0}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px}
+.pill{display:inline-block;padding:2px 12px;border-radius:999px;font-weight:700;font-size:13px}.b{background:var(--badbg);color:var(--bad)}.g{background:var(--okbg);color:var(--ok)}
+.big{font-size:30px;font-weight:800;margin:6px 0}a{color:var(--accent)}video{width:100%;border-radius:12px;border:1px solid var(--line)}
+ol{padding-left:22px}li{margin:6px 0}code{font-family:ui-monospace,Menlo,monospace;font-size:14px}
+</style>
+</head>
+<body><main>
+<h1>Legacy Bridge</h1>
+<p class="sub">IBM Bob modernizes legacy Java. <span class="accent">Bob's own tests decide what ships.</span></p>
+
+<video controls preload="metadata" poster="media/legacy-bridge-cover.png" src="media/legacy-bridge-demo.mp4"></video>
+
+<h2>Results from real Bob runs</h2>
+<div class="grid">
+<div class="card"><span class="pill b">BLOCKED in 2 of 2 runs</span>
+<div class="big">Base64 · Apache 2005</div>
+Ticket: <i>"reimplement on top of java.util.Base64"</i>. Bob's version changed behaviour; 8 of Bob's own tests failed. In run 1 even Bob's repair missed a 57-byte edge case and was refused.<br>
+<a href="reports/base64-run1.html">Run 1 report</a> · <a href="reports/base64-run2.html">Run 2 report</a></div>
+<div class="card"><span class="pill g">VERIFIED</span>
+<div class="big">Metaphone · Apache 2005</div>
+A ~300-line refactor. 117 Bob tests pass (Bob hardened its suite from 4/5 to 5/5 traps); an independent check found <b>0 of 136,800</b> outputs changed.<br>
+<a href="reports/metaphone.html">Report</a></div>
+<div class="card"><span class="pill b">BLOCKED → repaired</span>
+<div class="big">Invoice · teaching example</div>
+Ticket: <i>"simplify the branching logic"</i>. Bob changed <code>&gt; 10</code> to <code>&gt;= 10</code>: 10 widgets would cost $23.75, not $25.00.<br>
+<a href="reports/invoice.html">Report</a></div>
+</div>
+
+<h2>How it works</h2>
+<ol>
+<li><b>Bob writes characterization tests</b> that pin down what the legacy code does today; they must pass on the untouched code (Bob fixes its own wrong ones).</li>
+<li><b>Mutation check:</b> the code is broken on purpose, one real behaviour at a time; if a break slips through, <b>Bob hardens its suite</b>.</li>
+<li><b>Bob modernizes</b> the class from a normal ticket.</li>
+<li><b>The gate</b> re-runs Bob's tests: all pass → VERIFIED and applied; any fail → BLOCKED, nothing applied, failures go back to <b>Bob to repair</b>, and the repair must pass the same gate.</li>
+</ol>
+
+<h2>Evidence</h2>
+<div class="card">19 real IBM Bob calls, 2.54 Bob coins, each with prompt, answer, raw output, cost and Bob Task ID:
+<a href="https://github.com/Cid-oe/Legacy-Bridge/tree/legacy-bridge/bob_sessions">bob_sessions/</a>.
+Replay the whole pipeline without a Bob account: see the <a href="https://github.com/Cid-oe/Legacy-Bridge">README</a>.
+Slides: <a href="media/legacy-bridge-slides.pdf">PDF</a>.</div>
+</main></body></html>

@@ -1,0 +1,1386 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>Legacy Bridge report</title>
+<style>
+:root{--bg:#fbfbfa;--fg:#1d1d1b;--muted:#6b6b66;--card:#fff;--line:#e4e3de;--ok:#1f7a4d;--okbg:#e5f4ec;
+--bad:#b3261e;--badbg:#fbe9e7;--warn:#8a5a00;--warnbg:#fff4d6;--code:#f3f2ee}
+@media (prefers-color-scheme:dark){:root{--bg:#161615;--fg:#ecebe6;--muted:#a09f99;--card:#1f1f1d;--line:#34332f;
+--ok:#6fd3a0;--okbg:#17332a;--bad:#ff8a80;--badbg:#3a1d1b;--warn:#f5c35b;--warnbg:#3a2f14;--code:#262624}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.55 system-ui,-apple-system,Segoe UI,sans-serif}
+main{max-width:980px;margin:0 auto;padding:32px 16px 64px}h1{font-size:26px;margin:0 0 4px}h2{font-size:19px;margin:36px 0 12px}
+.sub{color:var(--muted);margin:0 0 20px}.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px 18px;margin:12px 0}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}.stat b{display:block;font-size:26px}
+.stat span{color:var(--muted);font-size:13px}.badge{display:inline-block;padding:2px 10px;border-radius:999px;font-weight:600;font-size:13px}
+.VERIFIED{background:var(--okbg);color:var(--ok)}.BLOCKED{background:var(--badbg);color:var(--bad)}.NOT{background:var(--warnbg);color:var(--warn)}
+.banner{background:var(--warnbg);color:var(--warn);border-radius:10px;padding:10px 14px;margin:12px 0;font-weight:600}
+table{width:100%;border-collapse:collapse;font-size:14px}td,th{text-align:left;padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--muted);font-weight:600}code,pre{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px}
+pre{background:var(--code);padding:12px;border-radius:8px;overflow-x:auto;max-height:480px}.add{color:var(--ok)}.del{color:var(--bad)}
+.k{color:var(--ok);font-weight:600}.s{color:var(--bad);font-weight:600}summary{cursor:pointer;color:var(--muted)}a{color:inherit}
+</style></head><body><main>
+<h1>Legacy Bridge report</h1>
+<p class="sub"><b>Metaphone from Apache Commons Codec 1.3 (2005, real open-source code)</b><br>Run 20260926-122205 · <code>src/main/java/org/apache/commons/codec/language/Metaphone.java</code> · 5 Bob calls · 0.233 Bob coins · Bob modernizes; Bob's own characterization tests decide what ships.</p>
+<div class="banner">Some steps reuse Bob answers recorded earlier in bob_sessions/; the rest are live Bob calls.</div><div class="stats">
+<div class="card stat"><b>117</b><span>characterization tests written by Bob</span></div>
+<div class="card stat"><b>pass</b><span>on the untouched legacy code</span></div>
+<div class="card stat"><b>5/5</b><span>behaviour mutants caught (hand-written controls: 5/5)</span></div>
+<div class="card stat"><b>0</b><span>regressions blocked (0 repaired by Bob and verified)</span></div>
+</div><h2>1. Characterization tests</h2><div class="card">
+<p>Bob read the legacy file and wrote <code>MetaphoneCharacterizationTest</code> to pin down what it does today. Bob corrected its own suite in 1 round(s) after it failed on the original. <b>Bob hardened its suite:</b> its first version caught 4/5 mutants; after seeing what slipped through, it caught 5/5.
+Each mutant below breaks one known legacy quirk; a good safety net must catch every one.</p>
+<table><tr><th>Mutant</th><th>Legacy quirk it breaks</th><th>Result</th><th>Caught by</th></tr><tr><td><code>M1-duplicate-C</code></td><td>Repeated letters are skipped, except C (&quot;ACCEPT&quot; keeps both Cs&#x27; sounds)</td><td class="k">caught</td><td>MetaphoneCharacterizationTest.duplicateCIsNotSuppressed, MetaphoneCharacterizationTest.acceptCcBeforeE, MetaphoneCharacterizationTest.succeedEncoding2</td></tr><tr><td><code>M2-single-char-path</code></td><td>A one-letter input is returned upper-cased without running the algorithm (the general path would index past the end)</td><td class="k">caught</td><td>MetaphoneCharacterizationTest.singleUppercaseLetterIsReturnedAsIs, MetaphoneCharacterizationTest.singleLowercaseLetterIsUppercased</td></tr><tr><td><code>M3-initial-X</code></td><td>An initial X is pronounced S (&quot;XAVIER&quot;)</td><td class="k">caught</td><td>MetaphoneCharacterizationTest.xavierEncoding, MetaphoneCharacterizationTest.initialXBecomesS, MetaphoneCharacterizationTest.nonInitialXBecomesKS</td></tr><tr><td><code>M4-WH-to-W</code></td><td>An initial WH becomes W (&quot;WHITE&quot;)</td><td class="k">caught</td><td>MetaphoneCharacterizationTest.hBeforeVowelIncluded, MetaphoneCharacterizationTest.whetherEncoding</td></tr><tr><td><code>M5-silent-TCH</code></td><td>The T in TCH is silent (&quot;MATCH&quot;)</td><td class="k">caught</td><td>MetaphoneCharacterizationTest.tchTIsSilentInCatch, MetaphoneCharacterizationTest.tchTIsSilentInFetch, MetaphoneCharacterizationTest.tchTIsSilentInMatch</td></tr></table>
+<p class="sub">Transcripts: <a href="https://github.com/Cid-oe/Legacy-Bridge/blob/legacy-bridge/bob_sessions/20260926T122205Z-metaphone-generate-tests-replay.md">20260926T122205Z-metaphone-generate-tests-replay.md</a> <a href="https://github.com/Cid-oe/Legacy-Bridge/blob/legacy-bridge/bob_sessions/20260926T122206Z-metaphone-fix-tests-replay.md">20260926T122206Z-metaphone-fix-tests-replay.md</a> <a href="https://github.com/Cid-oe/Legacy-Bridge/blob/legacy-bridge/bob_sessions/20260926T122214Z-metaphone-harden-tests-cli.md">20260926T122214Z-metaphone-harden-tests-cli.md</a></p></div><h2>2. Modernization: <span class="badge VERIFIED">VERIFIED</span></h2><div class="card">
+<p><b>Request:</b> Bring this class up to modern Java 21: generics instead of raw collections, java.time instead of Calendar, StringBuilder, no deprecated APIs. Behaviour must stay exactly the same.</p><p><b>117/117 characterization tests pass.</b> Applied to <code>out/metaphone/Metaphone.java</code>.</p>
+
+<details><summary>Diff (legacy → Bob)</summary><pre>--- legacy/Metaphone.java
++++ bob/Metaphone.java
+@@ -1,18 +1,18 @@
+ /*
+  * Copyright 2001-2004 The Apache Software Foundation.
+<span class="del">- * </span>
+<span class="add">+ *</span>
+  * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+  * you may not use this file except in compliance with the License.
+  * You may obtain a copy of the License at
+<span class="del">- * </span>
+<span class="add">+ *</span>
+  *      http://www.apache.org/licenses/LICENSE-2.0
+<span class="del">- * </span>
+<span class="add">+ *</span>
+  * Unless required by applicable law or agreed to in writing, software
+  * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  * See the License for the specific language governing permissions and
+  * limitations under the License.
+<span class="del">- */ </span>
+<span class="add">+ */</span>
+ 
+ package org.apache.commons.codec.language;
+ 
+@@ -20,365 +20,338 @@
+ import org.apache.commons.codec.StringEncoder;
+ 
+ /**
+<span class="del">- * Encodes a string into a metaphone value. </span>
+<span class="add">+ * Encodes a string into a metaphone value.</span>
+  * &lt;p&gt;
+<span class="del">- * Initial Java implementation by &lt;CITE&gt;William B. Brogden. December, 1997&lt;/CITE&gt;. </span>
+<span class="add">+ * Initial Java implementation by &lt;CITE&gt;William B. Brogden. December, 1997&lt;/CITE&gt;.</span>
+  * Permission given by &lt;CITE&gt;wbrogden&lt;/CITE&gt; for code to be used anywhere.
+  * &lt;/p&gt;
+  * &lt;p&gt;
+<span class="del">- * &lt;CITE&gt;Hanging on the Metaphone&lt;/CITE&gt; by &lt;CITE&gt;Lawrence Philips&lt;/CITE&gt; in &lt;CITE&gt;Computer Language of Dec. 1990, p</span>
+<span class="del">- * 39.&lt;/CITE&gt;</span>
+<span class="add">+ * &lt;CITE&gt;Hanging on the Metaphone&lt;/CITE&gt; by &lt;CITE&gt;Lawrence Philips&lt;/CITE&gt; in</span>
+<span class="add">+ * &lt;CITE&gt;Computer Language of Dec. 1990, p 39.&lt;/CITE&gt;</span>
+  * &lt;/p&gt;
+<span class="del">- * </span>
+<span class="add">+ *</span>
+  * @author Apache Software Foundation
+  * @version $Id: Metaphone.java,v 1.20 2004/06/05 18:32:04 ggregory Exp $
+  */
+ public class Metaphone implements StringEncoder {
+ 
+<span class="del">-    /**</span>
+<span class="del">-     * Five values in the English language </span>
+<span class="del">-     */</span>
+<span class="del">-    private String vowels = &quot;AEIOU&quot; ;</span>
+<span class="del">-</span>
+<span class="del">-    /**</span>
+<span class="del">-     * Variable used in Metaphone algorithm</span>
+<span class="del">-     */</span>
+<span class="del">-    private String frontv = &quot;EIY&quot;   ;</span>
+<span class="del">-</span>
+<span class="del">-    /**</span>
+<span class="del">-     * Variable used in Metaphone algorithm</span>
+<span class="del">-     */</span>
+<span class="del">-    private String varson = &quot;CSPTG&quot; ;</span>
+<span class="del">-</span>
+<span class="del">-    /**</span>
+<span class="del">-     * The max code length for metaphone is 4</span>
+<span class="del">-     */</span>
+<span class="del">-    private int maxCodeLen = 4 ;</span>
+<span class="del">-</span>
+<span class="del">-    /**</span>
+<span class="del">-     * Creates an instance of the Metaphone encoder</span>
+<span class="add">+    /** Five vowels in the English language */</span>
+<span class="add">+    private static final String VOWELS = &quot;AEIOU&quot;;</span>
+<span class="add">+</span>
+<span class="add">+    /** Variable used in Metaphone algorithm */</span>
+<span class="add">+    private static final String FRONTV = &quot;EIY&quot;;</span>
+<span class="add">+</span>
+<span class="add">+    /** Variable used in Metaphone algorithm */</span>
+<span class="add">+    private static final String VARSON = &quot;CSPTG&quot;;</span>
+<span class="add">+</span>
+<span class="add">+    /** The max code length for metaphone is 4 */</span>
+<span class="add">+    private int maxCodeLen = 4;</span>
+<span class="add">+</span>
+<span class="add">+    /**</span>
+<span class="add">+     * Creates an instance of the Metaphone encoder.</span>
+      */
+     public Metaphone() {
+         super();
+     }
+ 
+     /**
+<span class="del">-     * Find the metaphone value of a String. This is similar to the</span>
+<span class="del">-     * soundex algorithm, but better at finding similar sounding words.</span>
+<span class="del">-     * All input is converted to upper case.</span>
+<span class="del">-     * Limitations: Input format is expected to be a single ASCII word</span>
+<span class="del">-     * with only characters in the A - Z range, no punctuation or numbers.</span>
+<span class="add">+     * Find the metaphone value of a String. This is similar to the soundex algorithm,</span>
+<span class="add">+     * but better at finding similar sounding words. All input is converted to upper case.</span>
+<span class="add">+     * Limitations: Input format is expected to be a single ASCII word with only characters</span>
+<span class="add">+     * in the A - Z range, no punctuation or numbers.</span>
+      *
+      * @param txt String to find the metaphone code for
+      * @return A metaphone code corresponding to the String supplied
+      */
+     public String metaphone(String txt) {
+<span class="del">-        boolean hard = false ;</span>
+<span class="add">+        boolean hard = false;</span>
+         if ((txt == null) || (txt.length() == 0)) {
+<span class="del">-            return &quot;&quot; ;</span>
+<span class="add">+            return &quot;&quot;;</span>
+         }
+         // single character is itself
+         if (txt.length() == 1) {
+<span class="del">-            return txt.toUpperCase() ;</span>
+<span class="del">-        }</span>
+<span class="del">-      </span>
+<span class="del">-        char[] inwd = txt.toUpperCase().toCharArray() ;</span>
+<span class="del">-      </span>
+<span class="del">-        StringBuffer local = new StringBuffer(40); // manipulate</span>
+<span class="del">-        StringBuffer code = new StringBuffer(10) ; //   output</span>
+<span class="add">+            return txt.toUpperCase();</span>
+<span class="add">+        }</span>
+<span class="add">+</span>
+<span class="add">+        char[] inwd = txt.toUpperCase().toCharArray();</span>
+<span class="add">+</span>
+<span class="add">+        StringBuilder local = new StringBuilder(40); // manipulate</span>
+<span class="add">+        StringBuilder code  = new StringBuilder(10); // output</span>
+<span class="add">+</span>
+         // handle initial 2 characters exceptions
+<span class="del">-        switch(inwd[0]) {</span>
+<span class="del">-        case &#x27;K&#x27; : </span>
+<span class="del">-        case &#x27;G&#x27; : </span>
+<span class="del">-        case &#x27;P&#x27; : /* looking for KN, etc*/</span>
+<span class="del">-            if (inwd[1] == &#x27;N&#x27;) {</span>
+<span class="del">-                local.append(inwd, 1, inwd.length - 1);</span>
+<span class="del">-            } else {</span>
+<span class="add">+        switch (inwd[0]) {</span>
+<span class="add">+            case &#x27;K&#x27;:</span>
+<span class="add">+            case &#x27;G&#x27;:</span>
+<span class="add">+            case &#x27;P&#x27;: /* looking for KN, etc */</span>
+<span class="add">+                if (inwd[1] == &#x27;N&#x27;) {</span>
+<span class="add">+                    local.append(inwd, 1, inwd.length - 1);</span>
+<span class="add">+                } else {</span>
+<span class="add">+                    local.append(inwd);</span>
+<span class="add">+                }</span>
+<span class="add">+                break;</span>
+<span class="add">+            case &#x27;A&#x27;: /* looking for AE */</span>
+<span class="add">+                if (inwd[1] == &#x27;E&#x27;) {</span>
+<span class="add">+                    local.append(inwd, 1, inwd.length - 1);</span>
+<span class="add">+                } else {</span>
+<span class="add">+                    local.append(inwd);</span>
+<span class="add">+                }</span>
+<span class="add">+                break;</span>
+<span class="add">+            case &#x27;W&#x27;: /* looking for WR or WH */</span>
+<span class="add">+                if (inwd[1] == &#x27;R&#x27;) {   // WR -&gt; R</span>
+<span class="add">+                    local.append(inwd, 1, inwd.length - 1);</span>
+<span class="add">+                    break;</span>
+<span class="add">+                }</span>
+<span class="add">+                if (inwd[1] == &#x27;H&#x27;) {</span>
+<span class="add">+                    local.append(inwd, 1, inwd.length - 1);</span>
+<span class="add">+                    local.setCharAt(0, &#x27;W&#x27;); // WH -&gt; W</span>
+<span class="add">+                } else {</span>
+<span class="add">+                    local.append(inwd);</span>
+<span class="add">+                }</span>
+<span class="add">+                break;</span>
+<span class="add">+            case &#x27;X&#x27;: /* initial X becomes S */</span>
+<span class="add">+                inwd[0] = &#x27;S&#x27;;</span>
+                 local.append(inwd);
+<span class="add">+                break;</span>
+<span class="add">+            default:</span>
+<span class="add">+                local.append(inwd);</span>
+<span class="add">+        } // now local has working string with initials fixed</span>
+<span class="add">+</span>
+<span class="add">+        int wdsz = local.length();</span>
+<span class="add">+        int n = 0;</span>
+<span class="add">+</span>
+<span class="add">+        while ((code.length() &lt; this.getMaxCodeLen()) &amp;&amp; (n &lt; wdsz)) {</span>
+<span class="add">+            char symb = local.charAt(n);</span>
+<span class="add">+            // remove duplicate letters except C</span>
+<span class="add">+            if ((symb != &#x27;C&#x27;) &amp;&amp; isPreviousChar(local, n, symb)) {</span>
+<span class="add">+                n++;</span>
+<span class="add">+            } else { // not dup</span>
+<span class="add">+                switch (symb) {</span>
+<span class="add">+                    case &#x27;A&#x27;: case &#x27;E&#x27;: case &#x27;I&#x27;: case &#x27;O&#x27;: case &#x27;U&#x27;:</span>
+<span class="add">+                        if (n == 0) {</span>
+<span class="add">+                            code.append(symb);</span>
+<span class="add">+                        }</span>
+<span class="add">+                        break; // only use vowel if leading char</span>
+<span class="add">+                    case &#x27;B&#x27;:</span>
+<span class="add">+                        // B is silent if word ends in MB</span>
+<span class="add">+                        if (isPreviousChar(local, n, &#x27;M&#x27;) &amp;&amp; isLastChar(wdsz, n)) {</span>
+<span class="add">+                            break;</span>
+<span class="add">+                        }</span>
+<span class="add">+                        code.append(symb);</span>
+<span class="add">+                        break;</span>
+<span class="add">+                    case &#x27;C&#x27;: // lots of C special cases</span>
+<span class="add">+                        /* discard if SCI, SCE or SCY */</span>
+<span class="add">+                        if (isPreviousChar(local, n, &#x27;S&#x27;) &amp;&amp;</span>
+<span class="add">+                                !isLastChar(wdsz, n) &amp;&amp;</span>
+<span class="add">+                                (FRONTV.indexOf(local.charAt(n + 1)) &gt;= 0)) {</span>
+<span class="add">+                            break;</span>
+<span class="add">+                        }</span>
+<span class="add">+                        if (regionMatch(local, n, &quot;CIA&quot;)) { // &quot;CIA&quot; -&gt; X</span>
+<span class="add">+                            code.append(&#x27;X&#x27;);</span>
+<span class="add">+                            break;</span>
+<span class="add">+                        }</span>
+<span class="add">+                        if (!isLastChar(wdsz, n) &amp;&amp;</span>
+<span class="add">+                                (FRONTV.indexOf(local.charAt(n + 1)) &gt;= 0)) {</span>
+<span class="add">+                            code.append(&#x27;S&#x27;);</span>
+<span class="add">+                            break; // CI,CE,CY -&gt; S</span>
+<span class="add">+                        }</span>
+<span class="add">+                        if (isPreviousChar(local, n, &#x27;S&#x27;) &amp;&amp; isNextChar(local, n, &#x27;H&#x27;)) { // SCH-&gt;sk</span>
+<span class="add">+                            code.append(&#x27;K&#x27;);</span>
+<span class="add">+                            break;</span>
+<span class="add">+                        }</span>
+<span class="add">+                        if (isNextChar(local, n, &#x27;H&#x27;)) { // detect CH</span>
+<span class="add">+                            if ((n == 0) &amp;&amp; (wdsz &gt;= 3) &amp;&amp; isVowel(local, 2)) {</span>
+<span class="add">+                                code.append(&#x27;K&#x27;); // CH consonant -&gt; K consonant</span>
+<span class="add">+                            } else {</span>
+<span class="add">+                                code.append(&#x27;X&#x27;); // CHvowel -&gt; X</span>
+<span class="add">+                            }</span>
+<span class="add">+                        } else {</span>
+<span class="add">+                            code.append(&#x27;K&#x27;);</span>
+<span class="add">+                        }</span>
+<span class="add">+                        break;</span>
+<span class="add">+                    case &#x27;D&#x27;:</span>
+<span class="add">+                        if (!isLastChar(wdsz, n + 1) &amp;&amp;</span>
+<span class="add">+                                isNextChar(local, n, &#x27;G&#x27;) &amp;&amp;</span>
+<span class="add">+                                (FRONTV.indexOf(local.charAt(n + 2)) &gt;= 0)) { // DGE DGI DGY -&gt; J</span>
+<span class="add">+                            code.append(&#x27;J&#x27;);</span>
+<span class="add">+                            n += 2;</span>
+<span class="add">+                        } else {</span>
+<span class="add">+                            code.append(&#x27;T&#x27;);</span>
+<span class="add">+                        }</span>
+<span class="add">+                        break;</span>
+<span class="add">+                    case &#x27;G&#x27;: // GH silent at end or before consonant</span>
+<span class="add">+                        if (isLastChar(wdsz, n + 1) &amp;&amp; isNextChar(local, n, &#x27;H&#x27;)) {</span>
+<span class="add">+                            break;</span>
+<span class="add">+                        }</span>
+<span class="add">+                        if (!isLastChar(wdsz, n + 1) &amp;&amp;</span>
+<span class="add">+                                isNextChar(local, n, &#x27;H&#x27;) &amp;&amp;</span>
+<span class="add">+                                !isVowel(local, n + 2)) {</span>
+<span class="add">+                            break;</span>
+<span class="add">+                        }</span>
+<span class="add">+                        if ((n &gt; 0) &amp;&amp;</span>
+<span class="add">+                                (regionMatch(local, n, &quot;GN&quot;) || regionMatch(local, n, &quot;GNED&quot;))) {</span>
+<span class="add">+                            break; // silent G</span>
+<span class="add">+                        }</span>
+<span class="add">+                        hard = isPreviousChar(local, n, &#x27;G&#x27;);</span>
+<span class="add">+                        if (!isLastChar(wdsz, n) &amp;&amp;</span>
+<span class="add">+                                (FRONTV.indexOf(local.charAt(n + 1)) &gt;= 0) &amp;&amp;</span>
+<span class="add">+                                !hard) {</span>
+<span class="add">+                            code.append(&#x27;J&#x27;);</span>
+<span class="add">+                        } else {</span>
+<span class="add">+                            code.append(&#x27;K&#x27;);</span>
+<span class="add">+                        }</span>
+<span class="add">+                        break;</span>
+<span class="add">+                    case &#x27;H&#x27;:</span>
+<span class="add">+                        if (isLastChar(wdsz, n)) {</span>
+<span class="add">+                            break; // terminal H</span>
+<span class="add">+                        }</span>
+<span class="add">+                        if ((n &gt; 0) &amp;&amp; (VARSON.indexOf(local.charAt(n - 1)) &gt;= 0)) {</span>
+<span class="add">+                            break;</span>
+<span class="add">+                        }</span>
+<span class="add">+                        if (isVowel(local, n + 1)) {</span>
+<span class="add">+                            code.append(&#x27;H&#x27;); // Hvowel</span>
+<span class="add">+                        }</span>
+<span class="add">+                        break;</span>
+<span class="add">+                    case &#x27;F&#x27;:</span>
+<span class="add">+                    case &#x27;J&#x27;:</span>
+<span class="add">+                    case &#x27;L&#x27;:</span>
+<span class="add">+                    case &#x27;M&#x27;:</span>
+<span class="add">+                    case &#x27;N&#x27;:</span>
+<span class="add">+                    case &#x27;R&#x27;:</span>
+<span class="add">+                        code.append(symb);</span>
+<span class="add">+                        break;</span>
+<span class="add">+                    case &#x27;K&#x27;:</span>
+<span class="add">+                        if (n &gt; 0) { // not initial</span>
+<span class="add">+                            if (!isPreviousChar(local, n, &#x27;C&#x27;)) {</span>
+<span class="add">+                                code.append(symb);</span>
+<span class="add">+                            }</span>
+<span class="add">+                        } else {</span>
+<span class="add">+                            code.append(symb); // initial K</span>
+<span class="add">+                        }</span>
+<span class="add">+                        break;</span>
+<span class="add">+                    case &#x27;P&#x27;:</span>
+<span class="add">+                        if (isNextChar(local, n, &#x27;H&#x27;)) {</span>
+<span class="add">+                            code.append(&#x27;F&#x27;); // PH -&gt; F</span>
+<span class="add">+                        } else {</span>
+<span class="add">+                            code.append(symb);</span>
+<span class="add">+                        }</span>
+<span class="add">+                        break;</span>
+<span class="add">+                    case &#x27;Q&#x27;:</span>
+<span class="add">+                        code.append(&#x27;K&#x27;);</span>
+<span class="add">+                        break;</span>
+<span class="add">+                    case &#x27;S&#x27;:</span>
+<span class="add">+                        if (regionMatch(local, n, &quot;SH&quot;) ||</span>
+<span class="add">+                                regionMatch(local, n, &quot;SIO&quot;) ||</span>
+<span class="add">+                                regionMatch(local, n, &quot;SIA&quot;)) {</span>
+<span class="add">+                            code.append(&#x27;X&#x27;);</span>
+<span class="add">+                        } else {</span>
+<span class="add">+                            code.append(&#x27;S&#x27;);</span>
+<span class="add">+                        }</span>
+<span class="add">+                        break;</span>
+<span class="add">+                    case &#x27;T&#x27;:</span>
+<span class="add">+                        if (regionMatch(local, n, &quot;TIA&quot;) || regionMatch(local, n, &quot;TIO&quot;)) {</span>
+<span class="add">+                            code.append(&#x27;X&#x27;);</span>
+<span class="add">+                            break;</span>
+<span class="add">+                        }</span>
+<span class="add">+                        if (regionMatch(local, n, &quot;TCH&quot;)) {</span>
+<span class="add">+                            break; // silent if in &quot;TCH&quot;</span>
+<span class="add">+                        }</span>
+<span class="add">+                        // substitute numeral 0 for TH (resembles theta after all)</span>
+<span class="add">+                        if (regionMatch(local, n, &quot;TH&quot;)) {</span>
+<span class="add">+                            code.append(&#x27;0&#x27;);</span>
+<span class="add">+                        } else {</span>
+<span class="add">+                            code.append(&#x27;T&#x27;);</span>
+<span class="add">+                        }</span>
+<span class="add">+                        break;</span>
+<span class="add">+                    case &#x27;V&#x27;:</span>
+<span class="add">+                        code.append(&#x27;F&#x27;);</span>
+<span class="add">+                        break;</span>
+<span class="add">+                    case &#x27;W&#x27;: case &#x27;Y&#x27;: // silent if not followed by vowel</span>
+<span class="add">+                        if (!isLastChar(wdsz, n) &amp;&amp; isVowel(local, n + 1)) {</span>
+<span class="add">+                            code.append(symb);</span>
+<span class="add">+                        }</span>
+<span class="add">+                        break;</span>
+<span class="add">+                    case &#x27;X&#x27;:</span>
+<span class="add">+                        code.append(&#x27;K&#x27;);</span>
+<span class="add">+                        code.append(&#x27;S&#x27;);</span>
+<span class="add">+                        break;</span>
+<span class="add">+                    case &#x27;Z&#x27;:</span>
+<span class="add">+                        code.append(&#x27;S&#x27;);</span>
+<span class="add">+                        break;</span>
+<span class="add">+                } // end switch</span>
+<span class="add">+                n++;</span>
+<span class="add">+            } // end else from symb != &#x27;C&#x27;</span>
+<span class="add">+            if (code.length() &gt; this.getMaxCodeLen()) {</span>
+<span class="add">+                code.setLength(this.getMaxCodeLen());</span>
+             }
+<span class="del">-            break;</span>
+<span class="del">-        case &#x27;A&#x27;: /* looking for AE */</span>
+<span class="del">-            if (inwd[1] == &#x27;E&#x27;) {</span>
+<span class="del">-                local.append(inwd, 1, inwd.length - 1);</span>
+<span class="del">-            } else {</span>
+<span class="del">-                local.append(inwd);</span>
+<span class="del">-            }</span>
+<span class="del">-            break;</span>
+<span class="del">-        case &#x27;W&#x27; : /* looking for WR or WH */</span>
+<span class="del">-            if (inwd[1] == &#x27;R&#x27;) {   // WR -&gt; R</span>
+<span class="del">-                local.append(inwd, 1, inwd.length - 1); </span>
+<span class="del">-                break ;</span>
+<span class="del">-            }</span>
+<span class="del">-            if (inwd[1] == &#x27;H&#x27;) {</span>
+<span class="del">-                local.append(inwd, 1, inwd.length - 1);</span>
+<span class="del">-                local.setCharAt(0, &#x27;W&#x27;); // WH -&gt; W</span>
+<span class="del">-            } else {</span>
+<span class="del">-                local.append(inwd);</span>
+<span class="del">-            }</span>
+<span class="del">-            break;</span>
+<span class="del">-        case &#x27;X&#x27; : /* initial X becomes S */</span>
+<span class="del">-            inwd[0] = &#x27;S&#x27;;</span>
+<span class="del">-            local.append(inwd);</span>
+<span class="del">-            break ;</span>
+<span class="del">-        default :</span>
+<span class="del">-            local.append(inwd);</span>
+<span class="del">-        } // now local has working string with initials fixed</span>
+<span class="del">-</span>
+<span class="del">-        int wdsz = local.length();</span>
+<span class="del">-        int n = 0 ;</span>
+<span class="del">-</span>
+<span class="del">-        while ((code.length() &lt; this.getMaxCodeLen()) &amp;&amp; </span>
+<span class="del">-        	   (n &lt; wdsz) ) { // max code size of 4 works well</span>
+<span class="del">-            char symb = local.charAt(n) ;</span>
+<span class="del">-            // remove duplicate letters except C</span>
+<span class="del">-            if ((symb != &#x27;C&#x27;) &amp;&amp; (isPreviousChar( local, n, symb )) ) {</span>
+<span class="del">-                n++ ;</span>
+<span class="del">-            } else { // not dup</span>
+<span class="del">-                switch(symb) {</span>
+<span class="del">-                case &#x27;A&#x27; : case &#x27;E&#x27; : case &#x27;I&#x27; : case &#x27;O&#x27; : case &#x27;U&#x27; :</span>
+<span class="del">-                    if (n == 0) { </span>
+<span class="del">-                        code.append(symb);</span>
+<span class="del">-                    }</span>
+<span class="del">-                    break ; // only use vowel if leading char</span>
+<span class="del">-                case &#x27;B&#x27; :</span>
+<span class="del">-                    if ( isPreviousChar(local, n, &#x27;M&#x27;) &amp;&amp; </span>
+<span class="del">-                         isLastChar(wdsz, n) ) { // B is silent if word ends in MB</span>
+<span class="del">-						break;</span>
+<span class="del">-                    }</span>
+<span class="del">-                    code.append(symb);</span>
+<span class="del">-                    break;</span>
+<span class="del">-                case &#x27;C&#x27; : // lots of C special cases</span>
+<span class="del">-                    /* discard if SCI, SCE or SCY */</span>
+<span class="del">-                    if ( isPreviousChar(local, n, &#x27;S&#x27;) &amp;&amp; </span>
+<span class="del">-                         !isLastChar(wdsz, n) &amp;&amp; </span>
+<span class="del">-                         (this.frontv.indexOf(local.charAt(n + 1)) &gt;= 0) ) { </span>
+<span class="del">-                        break;</span>
+<span class="del">-                    }</span>
+<span class="del">-                    if (regionMatch(local, n, &quot;CIA&quot;)) { // &quot;CIA&quot; -&gt; X</span>
+<span class="del">-                        code.append(&#x27;X&#x27;); </span>
+<span class="del">-                        break;</span>
+<span class="del">-                    }</span>
+<span class="del">-                    if (!isLastChar(wdsz, n) &amp;&amp; </span>
+<span class="del">-                        (this.frontv.indexOf(local.charAt(n + 1)) &gt;= 0)) {</span>
+<span class="del">-                        code.append(&#x27;S&#x27;);</span>
+<span class="del">-                        break; // CI,CE,CY -&gt; S</span>
+<span class="del">-                    }</span>
+<span class="del">-                    if (isPreviousChar(local, n, &#x27;S&#x27;) &amp;&amp;</span>
+<span class="del">-						isNextChar(local, n, &#x27;H&#x27;) ) { // SCH-&gt;sk</span>
+<span class="del">-                        code.append(&#x27;K&#x27;) ; </span>
+<span class="del">-                        break ;</span>
+<span class="del">-                    }</span>
+<span class="del">-                    if (isNextChar(local, n, &#x27;H&#x27;)) { // detect CH</span>
+<span class="del">-                        if ((n == 0) &amp;&amp; </span>
+<span class="del">-                        	(wdsz &gt;= 3) &amp;&amp; </span>
+<span class="del">-                            isVowel(local,2) ) { // CH consonant -&gt; K consonant</span>
+<span class="del">-                            code.append(&#x27;K&#x27;);</span>
+<span class="del">-                        } else { </span>
+<span class="del">-                            code.append(&#x27;X&#x27;); // CHvowel -&gt; X</span>
+<span class="del">-                        }</span>
+<span class="del">-                    } else { </span>
+<span class="del">-                        code.append(&#x27;K&#x27;);</span>
+<span class="del">-                    }</span>
+<span class="del">-                    break ;</span>
+<span class="del">-                case &#x27;D&#x27; :</span>
+<span class="del">-                    if (!isLastChar(wdsz, n + 1) &amp;&amp; </span>
+<span class="del">-                        isNextChar(local, n, &#x27;G&#x27;) &amp;&amp; </span>
+<span class="del">-                        (this.frontv.indexOf(local.charAt(n + 2)) &gt;= 0)) { // DGE DGI DGY -&gt; J </span>
+<span class="del">-                        code.append(&#x27;J&#x27;); n += 2 ;</span>
+<span class="del">-                    } else { </span>
+<span class="del">-                        code.append(&#x27;T&#x27;);</span>
+<span class="del">-                    }</span>
+<span class="del">-                    break ;</span>
+<span class="del">-                case &#x27;G&#x27; : // GH silent at end or before consonant</span>
+<span class="del">-                    if (isLastChar(wdsz, n + 1) &amp;&amp; </span>
+<span class="del">-                        isNextChar(local, n, &#x27;H&#x27;)) {</span>
+<span class="del">-                        break;</span>
+<span class="del">-                    }</span>
+<span class="del">-                    if (!isLastChar(wdsz, n + 1) &amp;&amp;  </span>
+<span class="del">-                        isNextChar(local,n,&#x27;H&#x27;) &amp;&amp; </span>
+<span class="del">-                        !isVowel(local,n+2)) {</span>
+<span class="del">-                        break;</span>
+<span class="del">-                    }</span>
+<span class="del">-                    if ((n &gt; 0) &amp;&amp; </span>
+<span class="del">-                    	( regionMatch(local, n, &quot;GN&quot;) ||</span>
+<span class="del">-					      regionMatch(local, n, &quot;GNED&quot;) ) ) {</span>
+<span class="del">-                        break; // silent G</span>
+<span class="del">-                    }</span>
+<span class="del">-                    if (isPreviousChar(local, n, &#x27;G&#x27;)) {</span>
+<span class="del">-                        hard = true ;</span>
+<span class="del">-                    } else {</span>
+<span class="del">-                        hard = false ;</span>
+<span class="del">-                    }</span>
+<span class="del">-                    if (!isLastChar(wdsz, n) &amp;&amp; </span>
+<span class="del">-                        (this.frontv.indexOf(local.charAt(n + 1)) &gt;= 0) &amp;&amp; </span>
+<span class="del">-                        (!hard)) {</span>
+<span class="del">-                        code.append(&#x27;J&#x27;);</span>
+<span class="del">-                    } else {</span>
+<span class="del">-                        code.append(&#x27;K&#x27;);</span>
+<span class="del">-                    }</span>
+<span class="del">-                    break ;</span>
+<span class="del">-                case &#x27;H&#x27;:</span>
+<span class="del">-                    if (isLastChar(wdsz, n)) {</span>
+<span class="del">-                        break ; // terminal H</span>
+<span class="del">-                    }</span>
+<span class="del">-                    if ((n &gt; 0) &amp;&amp; </span>
+<span class="del">-                        (this.varson.indexOf(local.charAt(n - 1)) &gt;= 0)) {</span>
+<span class="del">-                        break;</span>
+<span class="del">-                    }</span>
+<span class="del">-                    if (isVowel(local,n+1)) {</span>
+<span class="del">-                        code.append(&#x27;H&#x27;); // Hvowel</span>
+<span class="del">-                    }</span>
+<span class="del">-                    break;</span>
+<span class="del">-                case &#x27;F&#x27;: </span>
+<span class="del">-                case &#x27;J&#x27; : </span>
+<span class="del">-                case &#x27;L&#x27; :</span>
+<span class="del">-                case &#x27;M&#x27;: </span>
+<span class="del">-                case &#x27;N&#x27; : </span>
+<span class="del">-                case &#x27;R&#x27; :</span>
+<span class="del">-                    code.append(symb); </span>
+<span class="del">-                    break;</span>
+<span class="del">-                case &#x27;K&#x27; :</span>
+<span class="del">-                    if (n &gt; 0) { // not initial</span>
+<span class="del">-                        if (!isPreviousChar(local, n, &#x27;C&#x27;)) {</span>
+<span class="del">-                            code.append(symb);</span>
+<span class="del">-                        }</span>
+<span class="del">-                    } else {</span>
+<span class="del">-                        code.append(symb); // initial K</span>
+<span class="del">-                    }</span>
+<span class="del">-                    break ;</span>
+<span class="del">-                case &#x27;P&#x27; :</span>
+<span class="del">-                    if (isNextChar(local,n,&#x27;H&#x27;)) {</span>
+<span class="del">-                        // PH -&gt; F</span>
+<span class="del">-                        code.append(&#x27;F&#x27;);</span>
+<span class="del">-                    } else {</span>
+<span class="del">-                        code.append(symb);</span>
+<span class="del">-                    }</span>
+<span class="del">-                    break ;</span>
+<span class="del">-                case &#x27;Q&#x27; :</span>
+<span class="del">-                    code.append(&#x27;K&#x27;);</span>
+<span class="del">-                    break;</span>
+<span class="del">-                case &#x27;S&#x27; :</span>
+<span class="del">-                    if (regionMatch(local,n,&quot;SH&quot;) || </span>
+<span class="del">-					    regionMatch(local,n,&quot;SIO&quot;) || </span>
+<span class="del">-					    regionMatch(local,n,&quot;SIA&quot;)) {</span>
+<span class="del">-                        code.append(&#x27;X&#x27;);</span>
+<span class="del">-                    } else {</span>
+<span class="del">-                        code.append(&#x27;S&#x27;);</span>
+<span class="del">-                    }</span>
+<span class="del">-                    break;</span>
+<span class="del">-                case &#x27;T&#x27; :</span>
+<span class="del">-                    if (regionMatch(local,n,&quot;TIA&quot;) || </span>
+<span class="del">-						regionMatch(local,n,&quot;TIO&quot;)) {</span>
+<span class="del">-                        code.append(&#x27;X&#x27;); </span>
+<span class="del">-                        break;</span>
+<span class="del">-                    }</span>
+<span class="del">-                    if (regionMatch(local,n,&quot;TCH&quot;)) {</span>
+<span class="del">-						// Silent if in &quot;TCH&quot;</span>
+<span class="del">-                        break;</span>
+<span class="del">-                    }</span>
+<span class="del">-                    // substitute numeral 0 for TH (resembles theta after all)</span>
+<span class="del">-                    if (regionMatch(local,n,&quot;TH&quot;)) {</span>
+<span class="del">-                        code.append(&#x27;0&#x27;);</span>
+<span class="del">-                    } else {</span>
+<span class="del">-                        code.append(&#x27;T&#x27;);</span>
+<span class="del">-                    }</span>
+<span class="del">-                    break ;</span>
+<span class="del">-                case &#x27;V&#x27; :</span>
+<span class="del">-                    code.append(&#x27;F&#x27;); break ;</span>
+<span class="del">-                case &#x27;W&#x27; : case &#x27;Y&#x27; : // silent if not followed by vowel</span>
+<span class="del">-                    if (!isLastChar(wdsz,n) &amp;&amp; </span>
+<span class="del">-                    	isVowel(local,n+1)) {</span>
+<span class="del">-                        code.append(symb);</span>
+<span class="del">-                    }</span>
+<span class="del">-                    break ;</span>
+<span class="del">-                case &#x27;X&#x27; :</span>
+<span class="del">-                    code.append(&#x27;K&#x27;); code.append(&#x27;S&#x27;);</span>
+<span class="del">-                    break ;</span>
+<span class="del">-                case &#x27;Z&#x27; :</span>
+<span class="del">-                    code.append(&#x27;S&#x27;); break ;</span>
+<span class="del">-                } // end switch</span>
+<span class="del">-                n++ ;</span>
+<span class="del">-            } // end else from symb != &#x27;C&#x27;</span>
+<span class="del">-            if (code.length() &gt; this.getMaxCodeLen()) { </span>
+<span class="del">-            	code.setLength(this.getMaxCodeLen()); </span>
+<span class="del">-            }</span>
+         }
+         return code.toString();
+     }
+ 
+<span class="del">-	private boolean isVowel(StringBuffer string, int index) {</span>
+<span class="del">-		return (this.vowels.indexOf(string.charAt(index)) &gt;= 0);</span>
+<span class="del">-	}</span>
+<span class="del">-</span>
+<span class="del">-	private boolean isPreviousChar(StringBuffer string, int index, char c) {</span>
+<span class="del">-		boolean matches = false;</span>
+<span class="del">-		if( index &gt; 0 &amp;&amp;</span>
+<span class="del">-		    index &lt; string.length() ) {</span>
+<span class="del">-			matches = string.charAt(index - 1) == c;</span>
+<span class="del">-		}</span>
+<span class="del">-		return matches;</span>
+<span class="del">-	}</span>
+<span class="del">-</span>
+<span class="del">-	private boolean isNextChar(StringBuffer string, int index, char c) {</span>
+<span class="del">-		boolean matches = false;</span>
+<span class="del">-		if( index &gt;= 0 &amp;&amp;</span>
+<span class="del">-		    index &lt; string.length() - 1 ) {</span>
+<span class="del">-			matches = string.charAt(index + 1) == c;</span>
+<span class="del">-		}</span>
+<span class="del">-		return matches;</span>
+<span class="del">-	}</span>
+<span class="del">-</span>
+<span class="del">-	private boolean regionMatch(StringBuffer string, int index, String test) {</span>
+<span class="del">-		boolean matches = false;</span>
+<span class="del">-		if( index &gt;= 0 &amp;&amp;</span>
+<span class="del">-		    (index + test.length() - 1) &lt; string.length() ) {</span>
+<span class="del">-			String substring = string.substring( index, index + test.length());</span>
+<span class="del">-			matches = substring.equals( test );</span>
+<span class="del">-		}</span>
+<span class="del">-		return matches;</span>
+<span class="del">-	}</span>
+<span class="del">-</span>
+<span class="del">-	private boolean isLastChar(int wdsz, int n) {</span>
+<span class="del">-		return n + 1 == wdsz;</span>
+<span class="del">-	} </span>
+<span class="del">-    </span>
+<span class="del">-    </span>
+<span class="del">-    /**</span>
+<span class="del">-     * Encodes an Object using the metaphone algorithm.  This method</span>
+<span class="del">-     * is provided in order to satisfy the requirements of the</span>
+<span class="del">-     * Encoder interface, and will throw an EncoderException if the</span>
+<span class="del">-     * supplied object is not of type java.lang.String.</span>
+<span class="add">+    private boolean isVowel(StringBuilder string, int index) {</span>
+<span class="add">+        return (VOWELS.indexOf(string.charAt(index)) &gt;= 0);</span>
+<span class="add">+    }</span>
+<span class="add">+</span>
+<span class="add">+    private boolean isPreviousChar(StringBuilder string, int index, char c) {</span>
+<span class="add">+        if (index &gt; 0 &amp;&amp; index &lt; string.length()) {</span>
+<span class="add">+            return string.charAt(index - 1) == c;</span>
+<span class="add">+        }</span>
+<span class="add">+        return false;</span>
+<span class="add">+    }</span>
+<span class="add">+</span>
+<span class="add">+    private boolean isNextChar(StringBuilder string, int index, char c) {</span>
+<span class="add">+        if (index &gt;= 0 &amp;&amp; index &lt; string.length() - 1) {</span>
+<span class="add">+            return string.charAt(index + 1) == c;</span>
+<span class="add">+        }</span>
+<span class="add">+        return false;</span>
+<span class="add">+    }</span>
+<span class="add">+</span>
+<span class="add">+    private boolean regionMatch(StringBuilder string, int index, String test) {</span>
+<span class="add">+        if (index &gt;= 0 &amp;&amp; (index + test.length() - 1) &lt; string.length()) {</span>
+<span class="add">+            return string.substring(index, index + test.length()).equals(test);</span>
+<span class="add">+        }</span>
+<span class="add">+        return false;</span>
+<span class="add">+    }</span>
+<span class="add">+</span>
+<span class="add">+    private boolean isLastChar(int wdsz, int n) {</span>
+<span class="add">+        return n + 1 == wdsz;</span>
+<span class="add">+    }</span>
+<span class="add">+</span>
+<span class="add">+    /**</span>
+<span class="add">+     * Encodes an Object using the metaphone algorithm. This method is provided in order to</span>
+<span class="add">+     * satisfy the requirements of the Encoder interface, and will throw an EncoderException</span>
+<span class="add">+     * if the supplied object is not of type java.lang.String.</span>
+      *
+      * @param pObject Object to encode
+<span class="del">-     * @return An object (or type java.lang.String) containing the </span>
+<span class="del">-     *         metaphone code which corresponds to the String supplied.</span>
+<span class="del">-     * @throws EncoderException if the parameter supplied is not</span>
+<span class="del">-     *                          of type java.lang.String</span>
+<span class="del">-     */</span>
+<span class="add">+     * @return An object (or type java.lang.String) containing the metaphone code which</span>
+<span class="add">+     *         corresponds to the String supplied.</span>
+<span class="add">+     * @throws EncoderException if the parameter supplied is not of type java.lang.String</span>
+<span class="add">+     */</span>
+<span class="add">+    @Override</span>
+     public Object encode(Object pObject) throws EncoderException {
+<span class="del">-        if (!(pObject instanceof java.lang.String)) {</span>
+<span class="del">-            throw new EncoderException(&quot;Parameter supplied to Metaphone encode is not of type java.lang.String&quot;); </span>
+<span class="add">+        if (!(pObject instanceof String)) {</span>
+<span class="add">+            throw new EncoderException(</span>
+<span class="add">+                &quot;Parameter supplied to Metaphone encode is not of type java.lang.String&quot;);</span>
+         }
+         return metaphone((String) pObject);
+     }
+ 
+     /**
+<span class="del">-     * Encodes a String using the Metaphone algorithm. </span>
+<span class="add">+     * Encodes a String using the Metaphone algorithm.</span>
+      *
+      * @param pString String object to encode
+      * @return The metaphone code corresponding to the String supplied
+      */
+<span class="add">+    @Override</span>
+     public String encode(String pString) {
+<span class="del">-        return metaphone(pString);   </span>
+<span class="del">-    }</span>
+<span class="del">-</span>
+<span class="del">-    /**</span>
+<span class="del">-     * Tests is the metaphones of two strings are identical.</span>
+<span class="add">+        return metaphone(pString);</span>
+<span class="add">+    }</span>
+<span class="add">+</span>
+<span class="add">+    /**</span>
+<span class="add">+     * Tests if the metaphones of two strings are identical.</span>
+      *
+      * @param str1 First of two strings to compare
+      * @param str2 Second of two strings to compare
+<span class="del">-     * @return true if the metaphones of these strings are identical, </span>
+<span class="del">-     *         false otherwise.</span>
+<span class="add">+     * @return true if the metaphones of these strings are identical, false otherwise.</span>
+      */
+     public boolean isMetaphoneEqual(String str1, String str2) {
+         return metaphone(str1).equals(metaphone(str2));
+@@ -386,14 +359,15 @@
+ 
+     /**
+      * Returns the maxCodeLen.
+<span class="add">+     *</span>
+      * @return int
+      */
+     public int getMaxCodeLen() { return this.maxCodeLen; }
+ 
+     /**
+      * Sets the maxCodeLen.
+<span class="add">+     *</span>
+      * @param maxCodeLen The maxCodeLen to set
+      */
+     public void setMaxCodeLen(int maxCodeLen) { this.maxCodeLen = maxCodeLen; }
+<span class="del">-</span>
+ }</pre></details>
+<p class="sub">Transcript: <a href="https://github.com/Cid-oe/Legacy-Bridge/blob/legacy-bridge/bob_sessions/20260926T122518Z-metaphone-benign-cli.md">20260926T122518Z-metaphone-benign-cli.md</a></p></div><h2>3. Modernization: <span class="badge VERIFIED">VERIFIED</span></h2><div class="card">
+<p><b>Request:</b> Ticket SRCH-431 (tech debt): Metaphone is Java 1.4-era code - StringBuffer, char arrays, a 170-line switch and duplicated special-case branches. Refactor it for readability with modern Java 21: StringBuilder, switch expressions, small helper methods, and simplify the special-case handling. Keep the public API.</p><p><b>117/117 characterization tests pass.</b> Applied to <code>out/metaphone/Metaphone.java</code>.</p>
+
+<details><summary>Diff (legacy → Bob)</summary><pre>--- legacy/Metaphone.java
++++ bob/Metaphone.java
+@@ -1,18 +1,18 @@
+ /*
+  * Copyright 2001-2004 The Apache Software Foundation.
+<span class="del">- * </span>
+<span class="add">+ *</span>
+  * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+  * you may not use this file except in compliance with the License.
+  * You may obtain a copy of the License at
+<span class="del">- * </span>
+<span class="add">+ *</span>
+  *      http://www.apache.org/licenses/LICENSE-2.0
+<span class="del">- * </span>
+<span class="add">+ *</span>
+  * Unless required by applicable law or agreed to in writing, software
+  * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  * See the License for the specific language governing permissions and
+  * limitations under the License.
+<span class="del">- */ </span>
+<span class="add">+ */</span>
+ 
+ package org.apache.commons.codec.language;
+ 
+@@ -20,365 +20,299 @@
+ import org.apache.commons.codec.StringEncoder;
+ 
+ /**
+<span class="del">- * Encodes a string into a metaphone value. </span>
+<span class="add">+ * Encodes a string into a metaphone value.</span>
+  * &lt;p&gt;
+<span class="del">- * Initial Java implementation by &lt;CITE&gt;William B. Brogden. December, 1997&lt;/CITE&gt;. </span>
+<span class="add">+ * Initial Java implementation by &lt;CITE&gt;William B. Brogden. December, 1997&lt;/CITE&gt;.</span>
+  * Permission given by &lt;CITE&gt;wbrogden&lt;/CITE&gt; for code to be used anywhere.
+  * &lt;/p&gt;
+  * &lt;p&gt;
+<span class="del">- * &lt;CITE&gt;Hanging on the Metaphone&lt;/CITE&gt; by &lt;CITE&gt;Lawrence Philips&lt;/CITE&gt; in &lt;CITE&gt;Computer Language of Dec. 1990, p</span>
+<span class="del">- * 39.&lt;/CITE&gt;</span>
+<span class="add">+ * &lt;CITE&gt;Hanging on the Metaphone&lt;/CITE&gt; by &lt;CITE&gt;Lawrence Philips&lt;/CITE&gt; in</span>
+<span class="add">+ * &lt;CITE&gt;Computer Language of Dec. 1990, p 39.&lt;/CITE&gt;</span>
+  * &lt;/p&gt;
+<span class="del">- * </span>
+<span class="add">+ *</span>
+  * @author Apache Software Foundation
+  * @version $Id: Metaphone.java,v 1.20 2004/06/05 18:32:04 ggregory Exp $
+  */
+ public class Metaphone implements StringEncoder {
+ 
+<span class="del">-    /**</span>
+<span class="del">-     * Five values in the English language </span>
+<span class="del">-     */</span>
+<span class="del">-    private String vowels = &quot;AEIOU&quot; ;</span>
+<span class="del">-</span>
+<span class="del">-    /**</span>
+<span class="del">-     * Variable used in Metaphone algorithm</span>
+<span class="del">-     */</span>
+<span class="del">-    private String frontv = &quot;EIY&quot;   ;</span>
+<span class="del">-</span>
+<span class="del">-    /**</span>
+<span class="del">-     * Variable used in Metaphone algorithm</span>
+<span class="del">-     */</span>
+<span class="del">-    private String varson = &quot;CSPTG&quot; ;</span>
+<span class="del">-</span>
+<span class="del">-    /**</span>
+<span class="del">-     * The max code length for metaphone is 4</span>
+<span class="del">-     */</span>
+<span class="del">-    private int maxCodeLen = 4 ;</span>
+<span class="del">-</span>
+<span class="del">-    /**</span>
+<span class="del">-     * Creates an instance of the Metaphone encoder</span>
+<span class="del">-     */</span>
+<span class="add">+    private static final String VOWELS = &quot;AEIOU&quot;;</span>
+<span class="add">+    private static final String FRONTV  = &quot;EIY&quot;;</span>
+<span class="add">+    private static final String VARSON  = &quot;CSPTG&quot;;</span>
+<span class="add">+</span>
+<span class="add">+    private int maxCodeLen = 4;</span>
+<span class="add">+</span>
+     public Metaphone() {
+         super();
+     }
+ 
+     /**
+<span class="del">-     * Find the metaphone value of a String. This is similar to the</span>
+<span class="del">-     * soundex algorithm, but better at finding similar sounding words.</span>
+<span class="del">-     * All input is converted to upper case.</span>
+<span class="del">-     * Limitations: Input format is expected to be a single ASCII word</span>
+<span class="del">-     * with only characters in the A - Z range, no punctuation or numbers.</span>
+<span class="add">+     * Find the metaphone value of a String. This is similar to the soundex algorithm,</span>
+<span class="add">+     * but better at finding similar sounding words. All input is converted to upper case.</span>
+<span class="add">+     * Limitations: Input format is expected to be a single ASCII word with only characters</span>
+<span class="add">+     * in the A - Z range, no punctuation or numbers.</span>
+      *
+      * @param txt String to find the metaphone code for
+      * @return A metaphone code corresponding to the String supplied
+      */
+     public String metaphone(String txt) {
+<span class="del">-        boolean hard = false ;</span>
+<span class="del">-        if ((txt == null) || (txt.length() == 0)) {</span>
+<span class="del">-            return &quot;&quot; ;</span>
+<span class="del">-        }</span>
+<span class="del">-        // single character is itself</span>
+<span class="add">+        if (txt == null || txt.isEmpty()) {</span>
+<span class="add">+            return &quot;&quot;;</span>
+<span class="add">+        }</span>
+         if (txt.length() == 1) {
+<span class="del">-            return txt.toUpperCase() ;</span>
+<span class="del">-        }</span>
+<span class="del">-      </span>
+<span class="del">-        char[] inwd = txt.toUpperCase().toCharArray() ;</span>
+<span class="del">-      </span>
+<span class="del">-        StringBuffer local = new StringBuffer(40); // manipulate</span>
+<span class="del">-        StringBuffer code = new StringBuffer(10) ; //   output</span>
+<span class="del">-        // handle initial 2 characters exceptions</span>
+<span class="del">-        switch(inwd[0]) {</span>
+<span class="del">-        case &#x27;K&#x27; : </span>
+<span class="del">-        case &#x27;G&#x27; : </span>
+<span class="del">-        case &#x27;P&#x27; : /* looking for KN, etc*/</span>
+<span class="del">-            if (inwd[1] == &#x27;N&#x27;) {</span>
+<span class="del">-                local.append(inwd, 1, inwd.length - 1);</span>
+<span class="add">+            return txt.toUpperCase();</span>
+<span class="add">+        }</span>
+<span class="add">+</span>
+<span class="add">+        String upper = txt.toUpperCase();</span>
+<span class="add">+        StringBuilder local = normalizeInitial(upper);</span>
+<span class="add">+        StringBuilder code  = new StringBuilder(10);</span>
+<span class="add">+</span>
+<span class="add">+        int wdsz = local.length();</span>
+<span class="add">+        int n    = 0;</span>
+<span class="add">+</span>
+<span class="add">+        while (code.length() &lt; maxCodeLen &amp;&amp; n &lt; wdsz) {</span>
+<span class="add">+            char symb = local.charAt(n);</span>
+<span class="add">+            // skip duplicate letters, except C</span>
+<span class="add">+            if (symb != &#x27;C&#x27; &amp;&amp; isPreviousChar(local, n, symb)) {</span>
+<span class="add">+                n++;</span>
+<span class="add">+                continue;</span>
+<span class="add">+            }</span>
+<span class="add">+            n = processChar(local, code, wdsz, n, symb);</span>
+<span class="add">+            if (code.length() &gt; maxCodeLen) {</span>
+<span class="add">+                code.setLength(maxCodeLen);</span>
+<span class="add">+            }</span>
+<span class="add">+        }</span>
+<span class="add">+        return code.toString();</span>
+<span class="add">+    }</span>
+<span class="add">+</span>
+<span class="add">+    // -------------------------------------------------------------------------</span>
+<span class="add">+    // Normalise the first character(s) of the uppercased word</span>
+<span class="add">+    // -------------------------------------------------------------------------</span>
+<span class="add">+</span>
+<span class="add">+    private StringBuilder normalizeInitial(String upper) {</span>
+<span class="add">+        char first  = upper.charAt(0);</span>
+<span class="add">+        char second = upper.charAt(1);</span>
+<span class="add">+        return switch (first) {</span>
+<span class="add">+            case &#x27;K&#x27;, &#x27;G&#x27;, &#x27;P&#x27; -&gt;  // KN / GN / PN  → drop leading consonant</span>
+<span class="add">+                second == &#x27;N&#x27; ? new StringBuilder(upper.substring(1))</span>
+<span class="add">+                              : new StringBuilder(upper);</span>
+<span class="add">+            case &#x27;A&#x27; -&gt;             // AE → drop the A</span>
+<span class="add">+                second == &#x27;E&#x27; ? new StringBuilder(upper.substring(1))</span>
+<span class="add">+                              : new StringBuilder(upper);</span>
+<span class="add">+            case &#x27;W&#x27; -&gt; normalizeW(upper, second);</span>
+<span class="add">+            case &#x27;X&#x27; -&gt; {           // initial X → S</span>
+<span class="add">+                StringBuilder sb = new StringBuilder(upper);</span>
+<span class="add">+                sb.setCharAt(0, &#x27;S&#x27;);</span>
+<span class="add">+                yield sb;</span>
+<span class="add">+            }</span>
+<span class="add">+            default -&gt; new StringBuilder(upper);</span>
+<span class="add">+        };</span>
+<span class="add">+    }</span>
+<span class="add">+</span>
+<span class="add">+    private StringBuilder normalizeW(String upper, char second) {</span>
+<span class="add">+        return switch (second) {</span>
+<span class="add">+            case &#x27;R&#x27; -&gt; new StringBuilder(upper.substring(1));   // WR → R</span>
+<span class="add">+            case &#x27;H&#x27; -&gt; {                                         // WH → W</span>
+<span class="add">+                StringBuilder sb = new StringBuilder(upper.substring(1));</span>
+<span class="add">+                sb.setCharAt(0, &#x27;W&#x27;);</span>
+<span class="add">+                yield sb;</span>
+<span class="add">+            }</span>
+<span class="add">+            default -&gt; new StringBuilder(upper);</span>
+<span class="add">+        };</span>
+<span class="add">+    }</span>
+<span class="add">+</span>
+<span class="add">+    // -------------------------------------------------------------------------</span>
+<span class="add">+    // Per-character processing — returns the next value of n</span>
+<span class="add">+    // -------------------------------------------------------------------------</span>
+<span class="add">+</span>
+<span class="add">+    private int processChar(</span>
+<span class="add">+            StringBuilder local, StringBuilder code, int wdsz, int n, char symb) {</span>
+<span class="add">+        switch (symb) {</span>
+<span class="add">+            case &#x27;A&#x27;, &#x27;E&#x27;, &#x27;I&#x27;, &#x27;O&#x27;, &#x27;U&#x27; -&gt; {</span>
+<span class="add">+                if (n == 0) code.append(symb);</span>
+<span class="add">+            }</span>
+<span class="add">+            case &#x27;B&#x27; -&gt; {</span>
+<span class="add">+                if (!(isPreviousChar(local, n, &#x27;M&#x27;) &amp;&amp; isLastChar(wdsz, n))) {</span>
+<span class="add">+                    code.append(symb);</span>
+<span class="add">+                }</span>
+<span class="add">+            }</span>
+<span class="add">+            case &#x27;C&#x27; -&gt; { return processC(local, code, wdsz, n); }</span>
+<span class="add">+            case &#x27;D&#x27; -&gt; { return processD(local, code, wdsz, n); }</span>
+<span class="add">+            case &#x27;G&#x27; -&gt; processG(local, code, wdsz, n);</span>
+<span class="add">+            case &#x27;H&#x27; -&gt; processH(local, code, wdsz, n);</span>
+<span class="add">+            case &#x27;F&#x27;, &#x27;J&#x27;, &#x27;L&#x27;, &#x27;M&#x27;, &#x27;N&#x27;, &#x27;R&#x27; -&gt; code.append(symb);</span>
+<span class="add">+            case &#x27;K&#x27; -&gt; {</span>
+<span class="add">+                if (n == 0 || !isPreviousChar(local, n, &#x27;C&#x27;)) {</span>
+<span class="add">+                    code.append(symb);</span>
+<span class="add">+                }</span>
+<span class="add">+            }</span>
+<span class="add">+            case &#x27;P&#x27; -&gt; code.append(isNextChar(local, n, &#x27;H&#x27;) ? &#x27;F&#x27; : symb);</span>
+<span class="add">+            case &#x27;Q&#x27; -&gt; code.append(&#x27;K&#x27;);</span>
+<span class="add">+            case &#x27;S&#x27; -&gt; processS(local, code, n);</span>
+<span class="add">+            case &#x27;T&#x27; -&gt; processT(local, code, n);</span>
+<span class="add">+            case &#x27;V&#x27; -&gt; code.append(&#x27;F&#x27;);</span>
+<span class="add">+            case &#x27;W&#x27;, &#x27;Y&#x27; -&gt; {</span>
+<span class="add">+                if (!isLastChar(wdsz, n) &amp;&amp; isVowel(local, n + 1)) {</span>
+<span class="add">+                    code.append(symb);</span>
+<span class="add">+                }</span>
+<span class="add">+            }</span>
+<span class="add">+            case &#x27;X&#x27; -&gt; { code.append(&#x27;K&#x27;); code.append(&#x27;S&#x27;); }</span>
+<span class="add">+            case &#x27;Z&#x27; -&gt; code.append(&#x27;S&#x27;);</span>
+<span class="add">+        }</span>
+<span class="add">+        return n + 1;</span>
+<span class="add">+    }</span>
+<span class="add">+</span>
+<span class="add">+    private int processC(StringBuilder local, StringBuilder code, int wdsz, int n) {</span>
+<span class="add">+        // SCI / SCE / SCY → silent C</span>
+<span class="add">+        if (isPreviousChar(local, n, &#x27;S&#x27;)</span>
+<span class="add">+                &amp;&amp; !isLastChar(wdsz, n)</span>
+<span class="add">+                &amp;&amp; isFrontVowel(local, n + 1)) {</span>
+<span class="add">+            return n + 1;</span>
+<span class="add">+        }</span>
+<span class="add">+        if (regionMatch(local, n, &quot;CIA&quot;)) {</span>
+<span class="add">+            code.append(&#x27;X&#x27;);</span>
+<span class="add">+            return n + 1;</span>
+<span class="add">+        }</span>
+<span class="add">+        if (!isLastChar(wdsz, n) &amp;&amp; isFrontVowel(local, n + 1)) {</span>
+<span class="add">+            code.append(&#x27;S&#x27;);  // CI / CE / CY → S</span>
+<span class="add">+            return n + 1;</span>
+<span class="add">+        }</span>
+<span class="add">+        if (isPreviousChar(local, n, &#x27;S&#x27;) &amp;&amp; isNextChar(local, n, &#x27;H&#x27;)) {</span>
+<span class="add">+            code.append(&#x27;K&#x27;);  // SCH → SK</span>
+<span class="add">+            return n + 1;</span>
+<span class="add">+        }</span>
+<span class="add">+        if (isNextChar(local, n, &#x27;H&#x27;)) {</span>
+<span class="add">+            // CH consonant → K, CH vowel → X</span>
+<span class="add">+            if (n == 0 &amp;&amp; wdsz &gt;= 3 &amp;&amp; isVowel(local, 2)) {</span>
+<span class="add">+                code.append(&#x27;K&#x27;);</span>
+             } else {
+<span class="del">-                local.append(inwd);</span>
+<span class="del">-            }</span>
+<span class="del">-            break;</span>
+<span class="del">-        case &#x27;A&#x27;: /* looking for AE */</span>
+<span class="del">-            if (inwd[1] == &#x27;E&#x27;) {</span>
+<span class="del">-                local.append(inwd, 1, inwd.length - 1);</span>
+<span class="del">-            } else {</span>
+<span class="del">-                local.append(inwd);</span>
+<span class="del">-            }</span>
+<span class="del">-            break;</span>
+<span class="del">-        case &#x27;W&#x27; : /* looking for WR or WH */</span>
+<span class="del">-            if (inwd[1] == &#x27;R&#x27;) {   // WR -&gt; R</span>
+<span class="del">-                local.append(inwd, 1, inwd.length - 1); </span>
+<span class="del">-                break ;</span>
+<span class="del">-            }</span>
+<span class="del">-            if (inwd[1] == &#x27;H&#x27;) {</span>
+<span class="del">-                local.append(inwd, 1, inwd.length - 1);</span>
+<span class="del">-                local.setCharAt(0, &#x27;W&#x27;); // WH -&gt; W</span>
+<span class="del">-            } else {</span>
+<span class="del">-                local.append(inwd);</span>
+<span class="del">-            }</span>
+<span class="del">-            break;</span>
+<span class="del">-        case &#x27;X&#x27; : /* initial X becomes S */</span>
+<span class="del">-            inwd[0] = &#x27;S&#x27;;</span>
+<span class="del">-            local.append(inwd);</span>
+<span class="del">-            break ;</span>
+<span class="del">-        default :</span>
+<span class="del">-            local.append(inwd);</span>
+<span class="del">-        } // now local has working string with initials fixed</span>
+<span class="del">-</span>
+<span class="del">-        int wdsz = local.length();</span>
+<span class="del">-        int n = 0 ;</span>
+<span class="del">-</span>
+<span class="del">-        while ((code.length() &lt; this.getMaxCodeLen()) &amp;&amp; </span>
+<span class="del">-        	   (n &lt; wdsz) ) { // max code size of 4 works well</span>
+<span class="del">-            char symb = local.charAt(n) ;</span>
+<span class="del">-            // remove duplicate letters except C</span>
+<span class="del">-            if ((symb != &#x27;C&#x27;) &amp;&amp; (isPreviousChar( local, n, symb )) ) {</span>
+<span class="del">-                n++ ;</span>
+<span class="del">-            } else { // not dup</span>
+<span class="del">-                switch(symb) {</span>
+<span class="del">-                case &#x27;A&#x27; : case &#x27;E&#x27; : case &#x27;I&#x27; : case &#x27;O&#x27; : case &#x27;U&#x27; :</span>
+<span class="del">-                    if (n == 0) { </span>
+<span class="del">-                        code.append(symb);</span>
+<span class="del">-                    }</span>
+<span class="del">-                    break ; // only use vowel if leading char</span>
+<span class="del">-                case &#x27;B&#x27; :</span>
+<span class="del">-                    if ( isPreviousChar(local, n, &#x27;M&#x27;) &amp;&amp; </span>
+<span class="del">-                         isLastChar(wdsz, n) ) { // B is silent if word ends in MB</span>
+<span class="del">-						break;</span>
+<span class="del">-                    }</span>
+<span class="del">-                    code.append(symb);</span>
+<span class="del">-                    break;</span>
+<span class="del">-                case &#x27;C&#x27; : // lots of C special cases</span>
+<span class="del">-                    /* discard if SCI, SCE or SCY */</span>
+<span class="del">-                    if ( isPreviousChar(local, n, &#x27;S&#x27;) &amp;&amp; </span>
+<span class="del">-                         !isLastChar(wdsz, n) &amp;&amp; </span>
+<span class="del">-                         (this.frontv.indexOf(local.charAt(n + 1)) &gt;= 0) ) { </span>
+<span class="del">-                        break;</span>
+<span class="del">-                    }</span>
+<span class="del">-                    if (regionMatch(local, n, &quot;CIA&quot;)) { // &quot;CIA&quot; -&gt; X</span>
+<span class="del">-                        code.append(&#x27;X&#x27;); </span>
+<span class="del">-                        break;</span>
+<span class="del">-                    }</span>
+<span class="del">-                    if (!isLastChar(wdsz, n) &amp;&amp; </span>
+<span class="del">-                        (this.frontv.indexOf(local.charAt(n + 1)) &gt;= 0)) {</span>
+<span class="del">-                        code.append(&#x27;S&#x27;);</span>
+<span class="del">-                        break; // CI,CE,CY -&gt; S</span>
+<span class="del">-                    }</span>
+<span class="del">-                    if (isPreviousChar(local, n, &#x27;S&#x27;) &amp;&amp;</span>
+<span class="del">-						isNextChar(local, n, &#x27;H&#x27;) ) { // SCH-&gt;sk</span>
+<span class="del">-                        code.append(&#x27;K&#x27;) ; </span>
+<span class="del">-                        break ;</span>
+<span class="del">-                    }</span>
+<span class="del">-                    if (isNextChar(local, n, &#x27;H&#x27;)) { // detect CH</span>
+<span class="del">-                        if ((n == 0) &amp;&amp; </span>
+<span class="del">-                        	(wdsz &gt;= 3) &amp;&amp; </span>
+<span class="del">-                            isVowel(local,2) ) { // CH consonant -&gt; K consonant</span>
+<span class="del">-                            code.append(&#x27;K&#x27;);</span>
+<span class="del">-                        } else { </span>
+<span class="del">-                            code.append(&#x27;X&#x27;); // CHvowel -&gt; X</span>
+<span class="del">-                        }</span>
+<span class="del">-                    } else { </span>
+<span class="del">-                        code.append(&#x27;K&#x27;);</span>
+<span class="del">-                    }</span>
+<span class="del">-                    break ;</span>
+<span class="del">-                case &#x27;D&#x27; :</span>
+<span class="del">-                    if (!isLastChar(wdsz, n + 1) &amp;&amp; </span>
+<span class="del">-                        isNextChar(local, n, &#x27;G&#x27;) &amp;&amp; </span>
+<span class="del">-                        (this.frontv.indexOf(local.charAt(n + 2)) &gt;= 0)) { // DGE DGI DGY -&gt; J </span>
+<span class="del">-                        code.append(&#x27;J&#x27;); n += 2 ;</span>
+<span class="del">-                    } else { </span>
+<span class="del">-                        code.append(&#x27;T&#x27;);</span>
+<span class="del">-                    }</span>
+<span class="del">-                    break ;</span>
+<span class="del">-                case &#x27;G&#x27; : // GH silent at end or before consonant</span>
+<span class="del">-                    if (isLastChar(wdsz, n + 1) &amp;&amp; </span>
+<span class="del">-                        isNextChar(local, n, &#x27;H&#x27;)) {</span>
+<span class="del">-                        break;</span>
+<span class="del">-                    }</span>
+<span class="del">-                    if (!isLastChar(wdsz, n + 1) &amp;&amp;  </span>
+<span class="del">-                        isNextChar(local,n,&#x27;H&#x27;) &amp;&amp; </span>
+<span class="del">-                        !isVowel(local,n+2)) {</span>
+<span class="del">-                        break;</span>
+<span class="del">-                    }</span>
+<span class="del">-                    if ((n &gt; 0) &amp;&amp; </span>
+<span class="del">-                    	( regionMatch(local, n, &quot;GN&quot;) ||</span>
+<span class="del">-					      regionMatch(local, n, &quot;GNED&quot;) ) ) {</span>
+<span class="del">-                        break; // silent G</span>
+<span class="del">-                    }</span>
+<span class="del">-                    if (isPreviousChar(local, n, &#x27;G&#x27;)) {</span>
+<span class="del">-                        hard = true ;</span>
+<span class="del">-                    } else {</span>
+<span class="del">-                        hard = false ;</span>
+<span class="del">-                    }</span>
+<span class="del">-                    if (!isLastChar(wdsz, n) &amp;&amp; </span>
+<span class="del">-                        (this.frontv.indexOf(local.charAt(n + 1)) &gt;= 0) &amp;&amp; </span>
+<span class="del">-                        (!hard)) {</span>
+<span class="del">-                        code.append(&#x27;J&#x27;);</span>
+<span class="del">-                    } else {</span>
+<span class="del">-                        code.append(&#x27;K&#x27;);</span>
+<span class="del">-                    }</span>
+<span class="del">-                    break ;</span>
+<span class="del">-                case &#x27;H&#x27;:</span>
+<span class="del">-                    if (isLastChar(wdsz, n)) {</span>
+<span class="del">-                        break ; // terminal H</span>
+<span class="del">-                    }</span>
+<span class="del">-                    if ((n &gt; 0) &amp;&amp; </span>
+<span class="del">-                        (this.varson.indexOf(local.charAt(n - 1)) &gt;= 0)) {</span>
+<span class="del">-                        break;</span>
+<span class="del">-                    }</span>
+<span class="del">-                    if (isVowel(local,n+1)) {</span>
+<span class="del">-                        code.append(&#x27;H&#x27;); // Hvowel</span>
+<span class="del">-                    }</span>
+<span class="del">-                    break;</span>
+<span class="del">-                case &#x27;F&#x27;: </span>
+<span class="del">-                case &#x27;J&#x27; : </span>
+<span class="del">-                case &#x27;L&#x27; :</span>
+<span class="del">-                case &#x27;M&#x27;: </span>
+<span class="del">-                case &#x27;N&#x27; : </span>
+<span class="del">-                case &#x27;R&#x27; :</span>
+<span class="del">-                    code.append(symb); </span>
+<span class="del">-                    break;</span>
+<span class="del">-                case &#x27;K&#x27; :</span>
+<span class="del">-                    if (n &gt; 0) { // not initial</span>
+<span class="del">-                        if (!isPreviousChar(local, n, &#x27;C&#x27;)) {</span>
+<span class="del">-                            code.append(symb);</span>
+<span class="del">-                        }</span>
+<span class="del">-                    } else {</span>
+<span class="del">-                        code.append(symb); // initial K</span>
+<span class="del">-                    }</span>
+<span class="del">-                    break ;</span>
+<span class="del">-                case &#x27;P&#x27; :</span>
+<span class="del">-                    if (isNextChar(local,n,&#x27;H&#x27;)) {</span>
+<span class="del">-                        // PH -&gt; F</span>
+<span class="del">-                        code.append(&#x27;F&#x27;);</span>
+<span class="del">-                    } else {</span>
+<span class="del">-                        code.append(symb);</span>
+<span class="del">-                    }</span>
+<span class="del">-                    break ;</span>
+<span class="del">-                case &#x27;Q&#x27; :</span>
+<span class="del">-                    code.append(&#x27;K&#x27;);</span>
+<span class="del">-                    break;</span>
+<span class="del">-                case &#x27;S&#x27; :</span>
+<span class="del">-                    if (regionMatch(local,n,&quot;SH&quot;) || </span>
+<span class="del">-					    regionMatch(local,n,&quot;SIO&quot;) || </span>
+<span class="del">-					    regionMatch(local,n,&quot;SIA&quot;)) {</span>
+<span class="del">-                        code.append(&#x27;X&#x27;);</span>
+<span class="del">-                    } else {</span>
+<span class="del">-                        code.append(&#x27;S&#x27;);</span>
+<span class="del">-                    }</span>
+<span class="del">-                    break;</span>
+<span class="del">-                case &#x27;T&#x27; :</span>
+<span class="del">-                    if (regionMatch(local,n,&quot;TIA&quot;) || </span>
+<span class="del">-						regionMatch(local,n,&quot;TIO&quot;)) {</span>
+<span class="del">-                        code.append(&#x27;X&#x27;); </span>
+<span class="del">-                        break;</span>
+<span class="del">-                    }</span>
+<span class="del">-                    if (regionMatch(local,n,&quot;TCH&quot;)) {</span>
+<span class="del">-						// Silent if in &quot;TCH&quot;</span>
+<span class="del">-                        break;</span>
+<span class="del">-                    }</span>
+<span class="del">-                    // substitute numeral 0 for TH (resembles theta after all)</span>
+<span class="del">-                    if (regionMatch(local,n,&quot;TH&quot;)) {</span>
+<span class="del">-                        code.append(&#x27;0&#x27;);</span>
+<span class="del">-                    } else {</span>
+<span class="del">-                        code.append(&#x27;T&#x27;);</span>
+<span class="del">-                    }</span>
+<span class="del">-                    break ;</span>
+<span class="del">-                case &#x27;V&#x27; :</span>
+<span class="del">-                    code.append(&#x27;F&#x27;); break ;</span>
+<span class="del">-                case &#x27;W&#x27; : case &#x27;Y&#x27; : // silent if not followed by vowel</span>
+<span class="del">-                    if (!isLastChar(wdsz,n) &amp;&amp; </span>
+<span class="del">-                    	isVowel(local,n+1)) {</span>
+<span class="del">-                        code.append(symb);</span>
+<span class="del">-                    }</span>
+<span class="del">-                    break ;</span>
+<span class="del">-                case &#x27;X&#x27; :</span>
+<span class="del">-                    code.append(&#x27;K&#x27;); code.append(&#x27;S&#x27;);</span>
+<span class="del">-                    break ;</span>
+<span class="del">-                case &#x27;Z&#x27; :</span>
+<span class="del">-                    code.append(&#x27;S&#x27;); break ;</span>
+<span class="del">-                } // end switch</span>
+<span class="del">-                n++ ;</span>
+<span class="del">-            } // end else from symb != &#x27;C&#x27;</span>
+<span class="del">-            if (code.length() &gt; this.getMaxCodeLen()) { </span>
+<span class="del">-            	code.setLength(this.getMaxCodeLen()); </span>
+<span class="del">-            }</span>
+<span class="del">-        }</span>
+<span class="del">-        return code.toString();</span>
+<span class="del">-    }</span>
+<span class="del">-</span>
+<span class="del">-	private boolean isVowel(StringBuffer string, int index) {</span>
+<span class="del">-		return (this.vowels.indexOf(string.charAt(index)) &gt;= 0);</span>
+<span class="del">-	}</span>
+<span class="del">-</span>
+<span class="del">-	private boolean isPreviousChar(StringBuffer string, int index, char c) {</span>
+<span class="del">-		boolean matches = false;</span>
+<span class="del">-		if( index &gt; 0 &amp;&amp;</span>
+<span class="del">-		    index &lt; string.length() ) {</span>
+<span class="del">-			matches = string.charAt(index - 1) == c;</span>
+<span class="del">-		}</span>
+<span class="del">-		return matches;</span>
+<span class="del">-	}</span>
+<span class="del">-</span>
+<span class="del">-	private boolean isNextChar(StringBuffer string, int index, char c) {</span>
+<span class="del">-		boolean matches = false;</span>
+<span class="del">-		if( index &gt;= 0 &amp;&amp;</span>
+<span class="del">-		    index &lt; string.length() - 1 ) {</span>
+<span class="del">-			matches = string.charAt(index + 1) == c;</span>
+<span class="del">-		}</span>
+<span class="del">-		return matches;</span>
+<span class="del">-	}</span>
+<span class="del">-</span>
+<span class="del">-	private boolean regionMatch(StringBuffer string, int index, String test) {</span>
+<span class="del">-		boolean matches = false;</span>
+<span class="del">-		if( index &gt;= 0 &amp;&amp;</span>
+<span class="del">-		    (index + test.length() - 1) &lt; string.length() ) {</span>
+<span class="del">-			String substring = string.substring( index, index + test.length());</span>
+<span class="del">-			matches = substring.equals( test );</span>
+<span class="del">-		}</span>
+<span class="del">-		return matches;</span>
+<span class="del">-	}</span>
+<span class="del">-</span>
+<span class="del">-	private boolean isLastChar(int wdsz, int n) {</span>
+<span class="del">-		return n + 1 == wdsz;</span>
+<span class="del">-	} </span>
+<span class="del">-    </span>
+<span class="del">-    </span>
+<span class="del">-    /**</span>
+<span class="del">-     * Encodes an Object using the metaphone algorithm.  This method</span>
+<span class="del">-     * is provided in order to satisfy the requirements of the</span>
+<span class="del">-     * Encoder interface, and will throw an EncoderException if the</span>
+<span class="del">-     * supplied object is not of type java.lang.String.</span>
+<span class="add">+                code.append(&#x27;X&#x27;);</span>
+<span class="add">+            }</span>
+<span class="add">+        } else {</span>
+<span class="add">+            code.append(&#x27;K&#x27;);</span>
+<span class="add">+        }</span>
+<span class="add">+        return n + 1;</span>
+<span class="add">+    }</span>
+<span class="add">+</span>
+<span class="add">+    private int processD(StringBuilder local, StringBuilder code, int wdsz, int n) {</span>
+<span class="add">+        // DGE / DGI / DGY → J</span>
+<span class="add">+        if (!isLastChar(wdsz, n + 1)</span>
+<span class="add">+                &amp;&amp; isNextChar(local, n, &#x27;G&#x27;)</span>
+<span class="add">+                &amp;&amp; isFrontVowel(local, n + 2)) {</span>
+<span class="add">+            code.append(&#x27;J&#x27;);</span>
+<span class="add">+            return n + 3;</span>
+<span class="add">+        }</span>
+<span class="add">+        code.append(&#x27;T&#x27;);</span>
+<span class="add">+        return n + 1;</span>
+<span class="add">+    }</span>
+<span class="add">+</span>
+<span class="add">+    private void processG(StringBuilder local, StringBuilder code, int wdsz, int n) {</span>
+<span class="add">+        // GH silent at end or before a consonant</span>
+<span class="add">+        if (isNextChar(local, n, &#x27;H&#x27;)) {</span>
+<span class="add">+            if (isLastChar(wdsz, n + 1)) return;</span>
+<span class="add">+            if (!isVowel(local, n + 2))  return;</span>
+<span class="add">+        }</span>
+<span class="add">+        // GN / GNED → silent G</span>
+<span class="add">+        if (n &gt; 0 &amp;&amp; (regionMatch(local, n, &quot;GN&quot;) || regionMatch(local, n, &quot;GNED&quot;))) {</span>
+<span class="add">+            return;</span>
+<span class="add">+        }</span>
+<span class="add">+        boolean hard = isPreviousChar(local, n, &#x27;G&#x27;);</span>
+<span class="add">+        if (!isLastChar(wdsz, n) &amp;&amp; isFrontVowel(local, n + 1) &amp;&amp; !hard) {</span>
+<span class="add">+            code.append(&#x27;J&#x27;);</span>
+<span class="add">+        } else {</span>
+<span class="add">+            code.append(&#x27;K&#x27;);</span>
+<span class="add">+        }</span>
+<span class="add">+    }</span>
+<span class="add">+</span>
+<span class="add">+    private void processH(StringBuilder local, StringBuilder code, int wdsz, int n) {</span>
+<span class="add">+        if (isLastChar(wdsz, n)) return;</span>
+<span class="add">+        if (n &gt; 0 &amp;&amp; VARSON.indexOf(local.charAt(n - 1)) &gt;= 0) return;</span>
+<span class="add">+        if (isVowel(local, n + 1)) code.append(&#x27;H&#x27;);</span>
+<span class="add">+    }</span>
+<span class="add">+</span>
+<span class="add">+    private void processS(StringBuilder local, StringBuilder code, int n) {</span>
+<span class="add">+        if (regionMatch(local, n, &quot;SH&quot;)</span>
+<span class="add">+                || regionMatch(local, n, &quot;SIO&quot;)</span>
+<span class="add">+                || regionMatch(local, n, &quot;SIA&quot;)) {</span>
+<span class="add">+            code.append(&#x27;X&#x27;);</span>
+<span class="add">+        } else {</span>
+<span class="add">+            code.append(&#x27;S&#x27;);</span>
+<span class="add">+        }</span>
+<span class="add">+    }</span>
+<span class="add">+</span>
+<span class="add">+    private void processT(StringBuilder local, StringBuilder code, int n) {</span>
+<span class="add">+        if (regionMatch(local, n, &quot;TIA&quot;) || regionMatch(local, n, &quot;TIO&quot;)) {</span>
+<span class="add">+            code.append(&#x27;X&#x27;);</span>
+<span class="add">+            return;</span>
+<span class="add">+        }</span>
+<span class="add">+        if (regionMatch(local, n, &quot;TCH&quot;)) return; // silent in TCH</span>
+<span class="add">+        code.append(regionMatch(local, n, &quot;TH&quot;) ? &#x27;0&#x27; : &#x27;T&#x27;);</span>
+<span class="add">+    }</span>
+<span class="add">+</span>
+<span class="add">+    // -------------------------------------------------------------------------</span>
+<span class="add">+    // Helper predicates</span>
+<span class="add">+    // -------------------------------------------------------------------------</span>
+<span class="add">+</span>
+<span class="add">+    private boolean isVowel(StringBuilder s, int index) {</span>
+<span class="add">+        return index &gt;= 0 &amp;&amp; index &lt; s.length() &amp;&amp; VOWELS.indexOf(s.charAt(index)) &gt;= 0;</span>
+<span class="add">+    }</span>
+<span class="add">+</span>
+<span class="add">+    private boolean isFrontVowel(StringBuilder s, int index) {</span>
+<span class="add">+        return index &gt;= 0 &amp;&amp; index &lt; s.length() &amp;&amp; FRONTV.indexOf(s.charAt(index)) &gt;= 0;</span>
+<span class="add">+    }</span>
+<span class="add">+</span>
+<span class="add">+    private boolean isPreviousChar(StringBuilder s, int index, char c) {</span>
+<span class="add">+        return index &gt; 0 &amp;&amp; index &lt; s.length() &amp;&amp; s.charAt(index - 1) == c;</span>
+<span class="add">+    }</span>
+<span class="add">+</span>
+<span class="add">+    private boolean isNextChar(StringBuilder s, int index, char c) {</span>
+<span class="add">+        return index &gt;= 0 &amp;&amp; index &lt; s.length() - 1 &amp;&amp; s.charAt(index + 1) == c;</span>
+<span class="add">+    }</span>
+<span class="add">+</span>
+<span class="add">+    private boolean regionMatch(StringBuilder s, int index, String test) {</span>
+<span class="add">+        int end = index + test.length();</span>
+<span class="add">+        return index &gt;= 0 &amp;&amp; end &lt;= s.length() &amp;&amp; s.substring(index, end).equals(test);</span>
+<span class="add">+    }</span>
+<span class="add">+</span>
+<span class="add">+    private boolean isLastChar(int wdsz, int n) {</span>
+<span class="add">+        return n + 1 == wdsz;</span>
+<span class="add">+    }</span>
+<span class="add">+</span>
+<span class="add">+    // -------------------------------------------------------------------------</span>
+<span class="add">+    // StringEncoder / public API</span>
+<span class="add">+    // -------------------------------------------------------------------------</span>
+<span class="add">+</span>
+<span class="add">+    /**</span>
+<span class="add">+     * Encodes an Object using the metaphone algorithm. Throws EncoderException</span>
+<span class="add">+     * if the supplied object is not of type java.lang.String.</span>
+      *
+      * @param pObject Object to encode
+<span class="del">-     * @return An object (or type java.lang.String) containing the </span>
+<span class="del">-     *         metaphone code which corresponds to the String supplied.</span>
+<span class="del">-     * @throws EncoderException if the parameter supplied is not</span>
+<span class="del">-     *                          of type java.lang.String</span>
+<span class="add">+     * @return A String containing the metaphone code for the supplied String.</span>
+<span class="add">+     * @throws EncoderException if the parameter is not of type java.lang.String</span>
+      */
+     public Object encode(Object pObject) throws EncoderException {
+<span class="del">-        if (!(pObject instanceof java.lang.String)) {</span>
+<span class="del">-            throw new EncoderException(&quot;Parameter supplied to Metaphone encode is not of type java.lang.String&quot;); </span>
+<span class="del">-        }</span>
+<span class="del">-        return metaphone((String) pObject);</span>
+<span class="del">-    }</span>
+<span class="del">-</span>
+<span class="del">-    /**</span>
+<span class="del">-     * Encodes a String using the Metaphone algorithm. </span>
+<span class="add">+        if (!(pObject instanceof String s)) {</span>
+<span class="add">+            throw new EncoderException(</span>
+<span class="add">+                &quot;Parameter supplied to Metaphone encode is not of type java.lang.String&quot;);</span>
+<span class="add">+        }</span>
+<span class="add">+        return metaphone(s);</span>
+<span class="add">+    }</span>
+<span class="add">+</span>
+<span class="add">+    /**</span>
+<span class="add">+     * Encodes a String using the Metaphone algorithm.</span>
+      *
+      * @param pString String object to encode
+      * @return The metaphone code corresponding to the String supplied
+      */
+     public String encode(String pString) {
+<span class="del">-        return metaphone(pString);   </span>
+<span class="del">-    }</span>
+<span class="del">-</span>
+<span class="del">-    /**</span>
+<span class="del">-     * Tests is the metaphones of two strings are identical.</span>
+<span class="add">+        return metaphone(pString);</span>
+<span class="add">+    }</span>
+<span class="add">+</span>
+<span class="add">+    /**</span>
+<span class="add">+     * Tests if the metaphones of two strings are identical.</span>
+      *
+      * @param str1 First of two strings to compare
+      * @param str2 Second of two strings to compare
+<span class="del">-     * @return true if the metaphones of these strings are identical, </span>
+<span class="del">-     *         false otherwise.</span>
+<span class="add">+     * @return true if the metaphones of these strings are identical, false otherwise.</span>
+      */
+     public boolean isMetaphoneEqual(String str1, String str2) {
+         return metaphone(str1).equals(metaphone(str2));
+@@ -395,5 +329,4 @@
+      * @param maxCodeLen The maxCodeLen to set
+      */
+     public void setMaxCodeLen(int maxCodeLen) { this.maxCodeLen = maxCodeLen; }
+<span class="del">-</span>
+ }</pre></details>
+<p class="sub">Transcript: <a href="https://github.com/Cid-oe/Legacy-Bridge/blob/legacy-bridge/bob_sessions/20260926T122601Z-metaphone-srch-431-cli.md">20260926T122601Z-metaphone-srch-431-cli.md</a></p></div>
+</main></body></html>

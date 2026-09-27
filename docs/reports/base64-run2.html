@@ -1,0 +1,1801 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>Legacy Bridge report</title>
+<style>
+:root{--bg:#fbfbfa;--fg:#1d1d1b;--muted:#6b6b66;--card:#fff;--line:#e4e3de;--ok:#1f7a4d;--okbg:#e5f4ec;
+--bad:#b3261e;--badbg:#fbe9e7;--warn:#8a5a00;--warnbg:#fff4d6;--code:#f3f2ee}
+@media (prefers-color-scheme:dark){:root{--bg:#161615;--fg:#ecebe6;--muted:#a09f99;--card:#1f1f1d;--line:#34332f;
+--ok:#6fd3a0;--okbg:#17332a;--bad:#ff8a80;--badbg:#3a1d1b;--warn:#f5c35b;--warnbg:#3a2f14;--code:#262624}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.55 system-ui,-apple-system,Segoe UI,sans-serif}
+main{max-width:980px;margin:0 auto;padding:32px 16px 64px}h1{font-size:26px;margin:0 0 4px}h2{font-size:19px;margin:36px 0 12px}
+.sub{color:var(--muted);margin:0 0 20px}.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px 18px;margin:12px 0}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}.stat b{display:block;font-size:26px}
+.stat span{color:var(--muted);font-size:13px}.badge{display:inline-block;padding:2px 10px;border-radius:999px;font-weight:600;font-size:13px}
+.VERIFIED{background:var(--okbg);color:var(--ok)}.BLOCKED{background:var(--badbg);color:var(--bad)}.NOT{background:var(--warnbg);color:var(--warn)}
+.banner{background:var(--warnbg);color:var(--warn);border-radius:10px;padding:10px 14px;margin:12px 0;font-weight:600}
+table{width:100%;border-collapse:collapse;font-size:14px}td,th{text-align:left;padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--muted);font-weight:600}code,pre{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px}
+pre{background:var(--code);padding:12px;border-radius:8px;overflow-x:auto;max-height:480px}.add{color:var(--ok)}.del{color:var(--bad)}
+.k{color:var(--ok);font-weight:600}.s{color:var(--bad);font-weight:600}summary{cursor:pointer;color:var(--muted)}a{color:inherit}
+</style></head><body><main>
+<h1>Legacy Bridge report</h1>
+<p class="sub"><b>Base64 from Apache Commons Codec 1.3 (2005, real open-source code)</b><br>Run 20260926-192119 · <code>src/main/java/org/apache/commons/codec/binary/Base64.java</code> · 4 Bob calls · 0.536 Bob coins · Bob modernizes; Bob's own characterization tests decide what ships.</p>
+<div class="stats">
+<div class="card stat"><b>60</b><span>characterization tests written by Bob</span></div>
+<div class="card stat"><b>pass</b><span>on the untouched legacy code</span></div>
+<div class="card stat"><b>5/5</b><span>behaviour mutants caught (hand-written controls: 5/5)</span></div>
+<div class="card stat"><b>1</b><span>regressions blocked (1 repaired by Bob and verified)</span></div>
+</div><h2>1. Characterization tests</h2><div class="card">
+<p>Bob read the legacy file and wrote <code>Base64CharacterizationTest</code> to pin down what it does today.
+Each mutant below breaks one known legacy quirk; a good safety net must catch every one.</p>
+<table><tr><th>Mutant</th><th>Legacy quirk it breaks</th><th>Result</th><th>Caught by</th></tr><tr><td><code>B1-discard-non-base64</code></td><td>Decoding silently skips every non-Base64 character (spaces, line breaks, junk) instead of rejecting it</td><td class="k">caught</td><td>Base64CharacterizationTest.decode_crlfIsStripped, Base64CharacterizationTest.decode_allNonBase64_returnsEmpty, Base64CharacterizationTest.decode_spacesAreStripped</td></tr><tr><td><code>B2-crlf-separator</code></td><td>Chunked output separates lines with CRLF (\r\n), not LF</td><td class="k">caught</td><td>Base64CharacterizationTest.encodeChunked_3Bytes_appendsCRLF, Base64CharacterizationTest.encodeChunked_57Bytes_oneChunkPlusCRLF, Base64CharacterizationTest.constants_chunkSeparatorIsCRLF</td></tr><tr><td><code>B3-trailing-separator</code></td><td>Chunked output always ends with a line separator, even for short input</td><td class="k">caught</td><td>Base64CharacterizationTest.encodeChunked_3Bytes_appendsCRLF, Base64CharacterizationTest.encodeChunked_oneByte_appendsCRLF, Base64CharacterizationTest.encodeChunked_58Bytes_twoChunks</td></tr><tr><td><code>B4-whitespace-is-valid</code></td><td>isArrayByteBase64 treats whitespace as valid Base64</td><td class="k">caught</td><td>Base64CharacterizationTest.isArrayByteBase64_allWhitespace_returnsTrue, Base64CharacterizationTest.isArrayByteBase64_whitespaceStrippedBeforeCheck</td></tr><tr><td><code>B5-76-char-lines</code></td><td>Chunked lines are 76 characters (MIME), not 64 (PEM)</td><td class="k">caught</td><td>Base64CharacterizationTest.constants_chunkSizeIs76, Base64CharacterizationTest.encodeChunked_57Bytes_oneChunkPlusCRLF, Base64CharacterizationTest.encodeChunked_58Bytes_twoChunks</td></tr></table>
+<p class="sub">Transcripts: <a href="https://github.com/Cid-oe/Legacy-Bridge/blob/legacy-bridge/bob_sessions/20260926T192119Z-base64-generate-tests-cli.md">20260926T192119Z-base64-generate-tests-cli.md</a></p></div><h2>2. Modernization: <span class="badge VERIFIED">VERIFIED</span></h2><div class="card">
+<p><b>Request:</b> Bring this class up to modern Java 21: generics instead of raw collections, java.time instead of Calendar, StringBuilder, no deprecated APIs. Behaviour must stay exactly the same.</p><p><b>60/60 characterization tests pass.</b> Applied to <code>out/base64/Base64.java</code>.</p>
+
+<details><summary>Diff (legacy → Bob)</summary><pre>--- legacy/Base64.java
++++ bob/Base64.java
+@@ -1,18 +1,18 @@
+ /*
+  * Copyright 2001-2004 The Apache Software Foundation.
+<span class="del">- * </span>
+<span class="add">+ *</span>
+  * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+  * you may not use this file except in compliance with the License.
+  * You may obtain a copy of the License at
+<span class="del">- * </span>
+<span class="add">+ *</span>
+  *      http://www.apache.org/licenses/LICENSE-2.0
+<span class="del">- * </span>
+<span class="add">+ *</span>
+  * Unless required by applicable law or agreed to in writing, software
+  * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  * See the License for the specific language governing permissions and
+  * limitations under the License.
+<span class="del">- */ </span>
+<span class="add">+ */</span>
+ 
+ package org.apache.commons.codec.binary;
+ 
+@@ -23,10 +23,10 @@
+ 
+ /**
+  * Provides Base64 encoding and decoding as defined by RFC 2045.
+<span class="del">- * </span>
+<span class="del">- * &lt;p&gt;This class implements section &lt;cite&gt;6.8. Base64 Content-Transfer-Encoding&lt;/cite&gt; </span>
+<span class="del">- * from RFC 2045 &lt;cite&gt;Multipurpose Internet Mail Extensions (MIME) Part One: </span>
+<span class="del">- * Format of Internet Message Bodies&lt;/cite&gt; by Freed and Borenstein.&lt;/p&gt; </span>
+<span class="add">+ *</span>
+<span class="add">+ * &lt;p&gt;This class implements section &lt;cite&gt;6.8. Base64 Content-Transfer-Encoding&lt;/cite&gt;</span>
+<span class="add">+ * from RFC 2045 &lt;cite&gt;Multipurpose Internet Mail Extensions (MIME) Part One:</span>
+<span class="add">+ * Format of Internet Message Bodies&lt;/cite&gt; by Freed and Borenstein.&lt;/p&gt;</span>
+  *
+  * @see &lt;a href=&quot;http://www.ietf.org/rfc/rfc2045.txt&quot;&gt;RFC 2045&lt;/a&gt;
+  * @author Apache Software Foundation
+@@ -37,67 +37,48 @@
+ 
+     /**
+      * Chunk size per RFC 2045 section 6.8.
+<span class="del">-     * </span>
+<span class="del">-     * &lt;p&gt;The {@value} character limit does not count the trailing CRLF, but counts </span>
+<span class="add">+     *</span>
+<span class="add">+     * &lt;p&gt;The {@value} character limit does not count the trailing CRLF, but counts</span>
+      * all other characters, including any equal signs.&lt;/p&gt;
+<span class="del">-     * </span>
+<span class="add">+     *</span>
+      * @see &lt;a href=&quot;http://www.ietf.org/rfc/rfc2045.txt&quot;&gt;RFC 2045 section 6.8&lt;/a&gt;
+      */
+     static final int CHUNK_SIZE = 76;
+ 
+     /**
+      * Chunk separator per RFC 2045 section 2.1.
+<span class="del">-     * </span>
+<span class="add">+     *</span>
+      * @see &lt;a href=&quot;http://www.ietf.org/rfc/rfc2045.txt&quot;&gt;RFC 2045 section 2.1&lt;/a&gt;
+      */
+<span class="del">-    static final byte[] CHUNK_SEPARATOR = &quot;\r\n&quot;.getBytes();</span>
+<span class="del">-</span>
+<span class="del">-    /**</span>
+<span class="del">-     * The base length.</span>
+<span class="del">-     */</span>
+<span class="add">+    static final byte[] CHUNK_SEPARATOR = &quot;\r\n&quot;.getBytes(java.nio.charset.StandardCharsets.US_ASCII);</span>
+<span class="add">+</span>
+<span class="add">+    /** The base length. */</span>
+     static final int BASELENGTH = 255;
+ 
+<span class="del">-    /**</span>
+<span class="del">-     * Lookup length.</span>
+<span class="del">-     */</span>
+<span class="add">+    /** Lookup length. */</span>
+     static final int LOOKUPLENGTH = 64;
+ 
+<span class="del">-    /**</span>
+<span class="del">-     * Used to calculate the number of bits in a byte.</span>
+<span class="del">-     */</span>
+<span class="add">+    /** Used to calculate the number of bits in a byte. */</span>
+     static final int EIGHTBIT = 8;
+ 
+<span class="del">-    /**</span>
+<span class="del">-     * Used when encoding something which has fewer than 24 bits.</span>
+<span class="del">-     */</span>
+<span class="add">+    /** Used when encoding something which has fewer than 24 bits. */</span>
+     static final int SIXTEENBIT = 16;
+ 
+<span class="del">-    /**</span>
+<span class="del">-     * Used to determine how many bits data contains.</span>
+<span class="del">-     */</span>
+<span class="add">+    /** Used to determine how many bits data contains. */</span>
+     static final int TWENTYFOURBITGROUP = 24;
+ 
+<span class="del">-    /**</span>
+<span class="del">-     * Used to get the number of Quadruples.</span>
+<span class="del">-     */</span>
+<span class="add">+    /** Used to get the number of Quadruples. */</span>
+     static final int FOURBYTE = 4;
+ 
+<span class="del">-    /**</span>
+<span class="del">-     * Used to test the sign of a byte.</span>
+<span class="del">-     */</span>
+<span class="add">+    /** Used to test the sign of a byte. */</span>
+     static final int SIGN = -128;
+<span class="del">-    </span>
+<span class="del">-    /**</span>
+<span class="del">-     * Byte used to pad output.</span>
+<span class="del">-     */</span>
+<span class="add">+</span>
+<span class="add">+    /** Byte used to pad output. */</span>
+     static final byte PAD = (byte) &#x27;=&#x27;;
+ 
+<span class="del">-    // Create arrays to hold the base64 characters and a </span>
+<span class="del">-    // lookup for base64 chars</span>
+<span class="del">-    private static byte[] base64Alphabet = new byte[BASELENGTH];</span>
+<span class="del">-    private static byte[] lookUpBase64Alphabet = new byte[LOOKUPLENGTH];</span>
+<span class="del">-</span>
+<span class="del">-    // Populating the lookup and character arrays</span>
+<span class="add">+    private static final byte[] base64Alphabet = new byte[BASELENGTH];</span>
+<span class="add">+    private static final byte[] lookUpBase64Alphabet = new byte[LOOKUPLENGTH];</span>
+<span class="add">+</span>
+     static {
+         for (int i = 0; i &lt; BASELENGTH; i++) {
+             base64Alphabet[i] = (byte) -1;
+@@ -111,22 +92,18 @@
+         for (int i = &#x27;9&#x27;; i &gt;= &#x27;0&#x27;; i--) {
+             base64Alphabet[i] = (byte) (i - &#x27;0&#x27; + 52);
+         }
+<span class="del">-</span>
+         base64Alphabet[&#x27;+&#x27;] = 62;
+         base64Alphabet[&#x27;/&#x27;] = 63;
+ 
+         for (int i = 0; i &lt;= 25; i++) {
+             lookUpBase64Alphabet[i] = (byte) (&#x27;A&#x27; + i);
+         }
+<span class="del">-</span>
+         for (int i = 26, j = 0; i &lt;= 51; i++, j++) {
+             lookUpBase64Alphabet[i] = (byte) (&#x27;a&#x27; + j);
+         }
+<span class="del">-</span>
+         for (int i = 52, j = 0; i &lt;= 61; i++, j++) {
+             lookUpBase64Alphabet[i] = (byte) (&#x27;0&#x27; + j);
+         }
+<span class="del">-</span>
+         lookUpBase64Alphabet[62] = (byte) &#x27;+&#x27;;
+         lookUpBase64Alphabet[63] = (byte) &#x27;/&#x27;;
+     }
+@@ -134,29 +111,22 @@
+     private static boolean isBase64(byte octect) {
+         if (octect == PAD) {
+             return true;
+<span class="del">-        } else if (base64Alphabet[octect] == -1) {</span>
+<span class="del">-            return false;</span>
+<span class="del">-        } else {</span>
+<span class="del">-            return true;</span>
+<span class="del">-        }</span>
+<span class="del">-    }</span>
+<span class="del">-</span>
+<span class="del">-    /**</span>
+<span class="del">-     * Tests a given byte array to see if it contains</span>
+<span class="del">-     * only valid characters within the Base64 alphabet.</span>
+<span class="add">+        }</span>
+<span class="add">+        return base64Alphabet[octect] != -1;</span>
+<span class="add">+    }</span>
+<span class="add">+</span>
+<span class="add">+    /**</span>
+<span class="add">+     * Tests a given byte array to see if it contains only valid characters</span>
+<span class="add">+     * within the Base64 alphabet.</span>
+      *
+      * @param arrayOctect byte array to test
+<span class="del">-     * @return true if all bytes are valid characters in the Base64</span>
+<span class="del">-     *         alphabet or if the byte array is empty; false, otherwise</span>
+<span class="add">+     * @return true if all bytes are valid characters in the Base64 alphabet or</span>
+<span class="add">+     *         if the byte array is empty; false, otherwise</span>
+      */
+     public static boolean isArrayByteBase64(byte[] arrayOctect) {
+<span class="del">-</span>
+         arrayOctect = discardWhitespace(arrayOctect);
+<span class="del">-</span>
+         int length = arrayOctect.length;
+         if (length == 0) {
+<span class="del">-            // shouldn&#x27;t a 0 length array be valid base64 data?</span>
+<span class="del">-            // return false;</span>
+             return true;
+         }
+         for (int i = 0; i &lt; length; i++) {
+@@ -168,8 +138,7 @@
+     }
+ 
+     /**
+<span class="del">-     * Encodes binary data using the base64 algorithm but</span>
+<span class="del">-     * does not chunk the output.</span>
+<span class="add">+     * Encodes binary data using the base64 algorithm but does not chunk the output.</span>
+      *
+      * @param binaryData binary data to encode
+      * @return Base64 characters
+@@ -179,8 +148,8 @@
+     }
+ 
+     /**
+<span class="del">-     * Encodes binary data using the base64 algorithm and chunks</span>
+<span class="del">-     * the encoded output into 76 character blocks</span>
+<span class="add">+     * Encodes binary data using the base64 algorithm and chunks the encoded output</span>
+<span class="add">+     * into 76 character blocks.</span>
+      *
+      * @param binaryData binary data to encode
+      * @return Base64 characters chunked in 76 character blocks
+@@ -189,174 +158,142 @@
+         return encodeBase64(binaryData, true);
+     }
+ 
+<span class="del">-</span>
+<span class="del">-    /**</span>
+<span class="del">-     * Decodes an Object using the base64 algorithm.  This method</span>
+<span class="del">-     * is provided in order to satisfy the requirements of the</span>
+<span class="del">-     * Decoder interface, and will throw a DecoderException if the</span>
+<span class="del">-     * supplied object is not of type byte[].</span>
+<span class="add">+    /**</span>
+<span class="add">+     * Decodes an Object using the base64 algorithm. This method is provided in order</span>
+<span class="add">+     * to satisfy the requirements of the Decoder interface, and will throw a</span>
+<span class="add">+     * DecoderException if the supplied object is not of type byte[].</span>
+      *
+      * @param pObject Object to decode
+<span class="del">-     * @return An object (of type byte[]) containing the </span>
+<span class="del">-     *         binary data which corresponds to the byte[] supplied.</span>
+<span class="del">-     * @throws DecoderException if the parameter supplied is not</span>
+<span class="del">-     *                          of type byte[]</span>
+<span class="del">-     */</span>
+<span class="add">+     * @return An object (of type byte[]) containing the binary data which corresponds</span>
+<span class="add">+     *         to the byte[] supplied.</span>
+<span class="add">+     * @throws DecoderException if the parameter supplied is not of type byte[]</span>
+<span class="add">+     */</span>
+<span class="add">+    @Override</span>
+     public Object decode(Object pObject) throws DecoderException {
+         if (!(pObject instanceof byte[])) {
+<span class="del">-            throw new DecoderException(&quot;Parameter supplied to Base64 decode is not a byte[]&quot;);</span>
+<span class="add">+            throw new DecoderException(</span>
+<span class="add">+                    &quot;Parameter supplied to Base64 decode is not a byte[]&quot;);</span>
+         }
+         return decode((byte[]) pObject);
+     }
+ 
+     /**
+<span class="del">-     * Decodes a byte[] containing containing</span>
+<span class="del">-     * characters in the Base64 alphabet.</span>
+<span class="add">+     * Decodes a byte[] containing characters in the Base64 alphabet.</span>
+      *
+      * @param pArray A byte array containing Base64 character data
+      * @return a byte array containing binary data
+      */
+<span class="add">+    @Override</span>
+     public byte[] decode(byte[] pArray) {
+         return decodeBase64(pArray);
+     }
+ 
+     /**
+<span class="del">-     * Encodes binary data using the base64 algorithm, optionally</span>
+<span class="del">-     * chunking the output into 76 character blocks.</span>
+<span class="del">-     *</span>
+<span class="del">-     * @param binaryData Array containing binary data to encode.</span>
+<span class="del">-     * @param isChunked if isChunked is true this encoder will chunk</span>
+<span class="del">-     *                  the base64 output into 76 character blocks</span>
+<span class="add">+     * Encodes binary data using the base64 algorithm, optionally chunking the output</span>
+<span class="add">+     * into 76 character blocks.</span>
+<span class="add">+     *</span>
+<span class="add">+     * @param binaryData  Array containing binary data to encode.</span>
+<span class="add">+     * @param isChunked   if isChunked is true this encoder will chunk the base64</span>
+<span class="add">+     *                    output into 76 character blocks</span>
+      * @return Base64-encoded data.
+      */
+     public static byte[] encodeBase64(byte[] binaryData, boolean isChunked) {
+         int lengthDataBits = binaryData.length * EIGHTBIT;
+         int fewerThan24bits = lengthDataBits % TWENTYFOURBITGROUP;
+         int numberTriplets = lengthDataBits / TWENTYFOURBITGROUP;
+<span class="del">-        byte encodedData[] = null;</span>
+<span class="del">-        int encodedDataLength = 0;</span>
+<span class="add">+        int encodedDataLength;</span>
+         int nbrChunks = 0;
+ 
+         if (fewerThan24bits != 0) {
+<span class="del">-            //data not divisible by 24 bit</span>
+             encodedDataLength = (numberTriplets + 1) * 4;
+         } else {
+<span class="del">-            // 16 or 8 bit</span>
+             encodedDataLength = numberTriplets * 4;
+         }
+ 
+<span class="del">-        // If the output is to be &quot;chunked&quot; into 76 character sections, </span>
+<span class="del">-        // for compliance with RFC 2045 MIME, then it is important to </span>
+<span class="del">-        // allow for extra length to account for the separator(s)</span>
+         if (isChunked) {
+<span class="del">-</span>
+<span class="del">-            nbrChunks =</span>
+<span class="del">-                (CHUNK_SEPARATOR.length == 0 ? 0 : (int) Math.ceil((float) encodedDataLength / CHUNK_SIZE));</span>
+<span class="add">+            nbrChunks = (CHUNK_SEPARATOR.length == 0)</span>
+<span class="add">+                    ? 0</span>
+<span class="add">+                    : (int) Math.ceil((float) encodedDataLength / CHUNK_SIZE);</span>
+             encodedDataLength += nbrChunks * CHUNK_SEPARATOR.length;
+         }
+ 
+<span class="del">-        encodedData = new byte[encodedDataLength];</span>
+<span class="del">-</span>
+<span class="del">-        byte k = 0, l = 0, b1 = 0, b2 = 0, b3 = 0;</span>
+<span class="del">-</span>
+<span class="add">+        byte[] encodedData = new byte[encodedDataLength];</span>
+<span class="add">+</span>
+<span class="add">+        byte k, l, b1, b2, b3;</span>
+         int encodedIndex = 0;
+<span class="del">-        int dataIndex = 0;</span>
+<span class="del">-        int i = 0;</span>
+<span class="add">+        int dataIndex;</span>
+<span class="add">+        int i;</span>
+         int nextSeparatorIndex = CHUNK_SIZE;
+         int chunksSoFar = 0;
+ 
+<span class="del">-        //log.debug(&quot;number of triplets = &quot; + numberTriplets);</span>
+         for (i = 0; i &lt; numberTriplets; i++) {
+             dataIndex = i * 3;
+             b1 = binaryData[dataIndex];
+             b2 = binaryData[dataIndex + 1];
+             b3 = binaryData[dataIndex + 2];
+ 
+<span class="del">-            //log.debug(&quot;b1= &quot; + b1 +&quot;, b2= &quot; + b2 + &quot;, b3= &quot; + b3);</span>
+<span class="del">-</span>
+             l = (byte) (b2 &amp; 0x0f);
+             k = (byte) (b1 &amp; 0x03);
+ 
+<span class="del">-            byte val1 =</span>
+<span class="del">-                ((b1 &amp; SIGN) == 0) ? (byte) (b1 &gt;&gt; 2) : (byte) ((b1) &gt;&gt; 2 ^ 0xc0);</span>
+<span class="del">-            byte val2 =</span>
+<span class="del">-                ((b2 &amp; SIGN) == 0) ? (byte) (b2 &gt;&gt; 4) : (byte) ((b2) &gt;&gt; 4 ^ 0xf0);</span>
+<span class="del">-            byte val3 =</span>
+<span class="del">-                ((b3 &amp; SIGN) == 0) ? (byte) (b3 &gt;&gt; 6) : (byte) ((b3) &gt;&gt; 6 ^ 0xfc);</span>
+<span class="del">-</span>
+<span class="del">-            encodedData[encodedIndex] = lookUpBase64Alphabet[val1];</span>
+<span class="del">-            //log.debug( &quot;val2 = &quot; + val2 );</span>
+<span class="del">-            //log.debug( &quot;k4   = &quot; + (k&lt;&lt;4) );</span>
+<span class="del">-            //log.debug(  &quot;vak  = &quot; + (val2 | (k&lt;&lt;4)) );</span>
+<span class="del">-            encodedData[encodedIndex + 1] =</span>
+<span class="del">-                lookUpBase64Alphabet[val2 | (k &lt;&lt; 4)];</span>
+<span class="del">-            encodedData[encodedIndex + 2] =</span>
+<span class="del">-                lookUpBase64Alphabet[(l &lt;&lt; 2) | val3];</span>
+<span class="add">+            byte val1 = ((b1 &amp; SIGN) == 0)</span>
+<span class="add">+                    ? (byte) (b1 &gt;&gt; 2) : (byte) ((b1) &gt;&gt; 2 ^ 0xc0);</span>
+<span class="add">+            byte val2 = ((b2 &amp; SIGN) == 0)</span>
+<span class="add">+                    ? (byte) (b2 &gt;&gt; 4) : (byte) ((b2) &gt;&gt; 4 ^ 0xf0);</span>
+<span class="add">+            byte val3 = ((b3 &amp; SIGN) == 0)</span>
+<span class="add">+                    ? (byte) (b3 &gt;&gt; 6) : (byte) ((b3) &gt;&gt; 6 ^ 0xfc);</span>
+<span class="add">+</span>
+<span class="add">+            encodedData[encodedIndex]     = lookUpBase64Alphabet[val1];</span>
+<span class="add">+            encodedData[encodedIndex + 1] = lookUpBase64Alphabet[val2 | (k &lt;&lt; 4)];</span>
+<span class="add">+            encodedData[encodedIndex + 2] = lookUpBase64Alphabet[(l &lt;&lt; 2) | val3];</span>
+             encodedData[encodedIndex + 3] = lookUpBase64Alphabet[b3 &amp; 0x3f];
+<span class="del">-</span>
+             encodedIndex += 4;
+ 
+<span class="del">-            // If we are chunking, let&#x27;s put a chunk separator down.</span>
+             if (isChunked) {
+<span class="del">-                // this assumes that CHUNK_SIZE % 4 == 0</span>
+                 if (encodedIndex == nextSeparatorIndex) {
+                     System.arraycopy(
+<span class="del">-                        CHUNK_SEPARATOR,</span>
+<span class="del">-                        0,</span>
+<span class="del">-                        encodedData,</span>
+<span class="del">-                        encodedIndex,</span>
+<span class="del">-                        CHUNK_SEPARATOR.length);</span>
+<span class="add">+                            CHUNK_SEPARATOR, 0,</span>
+<span class="add">+                            encodedData, encodedIndex,</span>
+<span class="add">+                            CHUNK_SEPARATOR.length);</span>
+                     chunksSoFar++;
+<span class="del">-                    nextSeparatorIndex =</span>
+<span class="del">-                        (CHUNK_SIZE * (chunksSoFar + 1)) + </span>
+<span class="del">-                        (chunksSoFar * CHUNK_SEPARATOR.length);</span>
+<span class="add">+                    nextSeparatorIndex = (CHUNK_SIZE * (chunksSoFar + 1))</span>
+<span class="add">+                            + (chunksSoFar * CHUNK_SEPARATOR.length);</span>
+                     encodedIndex += CHUNK_SEPARATOR.length;
+                 }
+             }
+         }
+ 
+<span class="del">-        // form integral number of 6-bit groups</span>
+         dataIndex = i * 3;
+ 
+         if (fewerThan24bits == EIGHTBIT) {
+             b1 = binaryData[dataIndex];
+             k = (byte) (b1 &amp; 0x03);
+<span class="del">-            //log.debug(&quot;b1=&quot; + b1);</span>
+<span class="del">-            //log.debug(&quot;b1&lt;&lt;2 = &quot; + (b1&gt;&gt;2) );</span>
+<span class="del">-            byte val1 =</span>
+<span class="del">-                ((b1 &amp; SIGN) == 0) ? (byte) (b1 &gt;&gt; 2) : (byte) ((b1) &gt;&gt; 2 ^ 0xc0);</span>
+<span class="del">-            encodedData[encodedIndex] = lookUpBase64Alphabet[val1];</span>
+<span class="add">+            byte val1 = ((b1 &amp; SIGN) == 0)</span>
+<span class="add">+                    ? (byte) (b1 &gt;&gt; 2) : (byte) ((b1) &gt;&gt; 2 ^ 0xc0);</span>
+<span class="add">+            encodedData[encodedIndex]     = lookUpBase64Alphabet[val1];</span>
+             encodedData[encodedIndex + 1] = lookUpBase64Alphabet[k &lt;&lt; 4];
+             encodedData[encodedIndex + 2] = PAD;
+             encodedData[encodedIndex + 3] = PAD;
+         } else if (fewerThan24bits == SIXTEENBIT) {
+<span class="del">-</span>
+             b1 = binaryData[dataIndex];
+             b2 = binaryData[dataIndex + 1];
+             l = (byte) (b2 &amp; 0x0f);
+             k = (byte) (b1 &amp; 0x03);
+<span class="del">-</span>
+<span class="del">-            byte val1 =</span>
+<span class="del">-                ((b1 &amp; SIGN) == 0) ? (byte) (b1 &gt;&gt; 2) : (byte) ((b1) &gt;&gt; 2 ^ 0xc0);</span>
+<span class="del">-            byte val2 =</span>
+<span class="del">-                ((b2 &amp; SIGN) == 0) ? (byte) (b2 &gt;&gt; 4) : (byte) ((b2) &gt;&gt; 4 ^ 0xf0);</span>
+<span class="del">-</span>
+<span class="del">-            encodedData[encodedIndex] = lookUpBase64Alphabet[val1];</span>
+<span class="del">-            encodedData[encodedIndex + 1] =</span>
+<span class="del">-                lookUpBase64Alphabet[val2 | (k &lt;&lt; 4)];</span>
+<span class="add">+            byte val1 = ((b1 &amp; SIGN) == 0)</span>
+<span class="add">+                    ? (byte) (b1 &gt;&gt; 2) : (byte) ((b1) &gt;&gt; 2 ^ 0xc0);</span>
+<span class="add">+            byte val2 = ((b2 &amp; SIGN) == 0)</span>
+<span class="add">+                    ? (byte) (b2 &gt;&gt; 4) : (byte) ((b2) &gt;&gt; 4 ^ 0xf0);</span>
+<span class="add">+            encodedData[encodedIndex]     = lookUpBase64Alphabet[val1];</span>
+<span class="add">+            encodedData[encodedIndex + 1] = lookUpBase64Alphabet[val2 | (k &lt;&lt; 4)];</span>
+             encodedData[encodedIndex + 2] = lookUpBase64Alphabet[l &lt;&lt; 2];
+             encodedData[encodedIndex + 3] = PAD;
+         }
+ 
+         if (isChunked) {
+<span class="del">-            // we also add a separator to the end of the final chunk.</span>
+             if (chunksSoFar &lt; nbrChunks) {
+                 System.arraycopy(
+<span class="del">-                    CHUNK_SEPARATOR,</span>
+<span class="del">-                    0,</span>
+<span class="del">-                    encodedData,</span>
+<span class="del">-                    encodedDataLength - CHUNK_SEPARATOR.length,</span>
+<span class="del">-                    CHUNK_SEPARATOR.length);</span>
+<span class="add">+                        CHUNK_SEPARATOR, 0,</span>
+<span class="add">+                        encodedData, encodedDataLength - CHUNK_SEPARATOR.length,</span>
+<span class="add">+                        CHUNK_SEPARATOR.length);</span>
+             }
+         }
+ 
+@@ -364,32 +301,26 @@
+     }
+ 
+     /**
+<span class="del">-     * Decodes Base64 data into octects</span>
+<span class="add">+     * Decodes Base64 data into octets.</span>
+      *
+      * @param base64Data Byte array containing Base64 data
+      * @return Array containing decoded data.
+      */
+     public static byte[] decodeBase64(byte[] base64Data) {
+<span class="del">-        // RFC 2045 requires that we discard ALL non-Base64 characters</span>
+         base64Data = discardNonBase64(base64Data);
+ 
+<span class="del">-        // handle the edge case, so we don&#x27;t have to worry about it later</span>
+         if (base64Data.length == 0) {
+             return new byte[0];
+         }
+ 
+         int numberQuadruple = base64Data.length / FOURBYTE;
+<span class="del">-        byte decodedData[] = null;</span>
+<span class="del">-        byte b1 = 0, b2 = 0, b3 = 0, b4 = 0, marker0 = 0, marker1 = 0;</span>
+<span class="del">-</span>
+<span class="del">-        // Throw away anything not in base64Data</span>
+<span class="add">+        byte[] decodedData;</span>
+<span class="add">+        byte b1, b2, b3, b4, marker0, marker1;</span>
+ 
+         int encodedIndex = 0;
+<span class="del">-        int dataIndex = 0;</span>
+<span class="add">+        int dataIndex;</span>
+         {
+<span class="del">-            // this sizes the output array properly - rlw</span>
+             int lastData = base64Data.length;
+<span class="del">-            // ignore the &#x27;=&#x27; padding</span>
+             while (base64Data[lastData - 1] == PAD) {
+                 if (--lastData == 0) {
+                     return new byte[0];
+@@ -397,128 +328,113 @@
+             }
+             decodedData = new byte[lastData - numberQuadruple];
+         }
+<span class="del">-        </span>
+<span class="add">+</span>
+         for (int i = 0; i &lt; numberQuadruple; i++) {
+             dataIndex = i * 4;
+             marker0 = base64Data[dataIndex + 2];
+             marker1 = base64Data[dataIndex + 3];
+<span class="del">-            </span>
+<span class="add">+</span>
+             b1 = base64Alphabet[base64Data[dataIndex]];
+             b2 = base64Alphabet[base64Data[dataIndex + 1]];
+<span class="del">-            </span>
+<span class="add">+</span>
+             if (marker0 != PAD &amp;&amp; marker1 != PAD) {
+<span class="del">-                //No PAD e.g 3cQl</span>
+                 b3 = base64Alphabet[marker0];
+                 b4 = base64Alphabet[marker1];
+<span class="del">-                </span>
+<span class="del">-                decodedData[encodedIndex] = (byte) (b1 &lt;&lt; 2 | b2 &gt;&gt; 4);</span>
+<span class="add">+                decodedData[encodedIndex]     = (byte) (b1 &lt;&lt; 2 | b2 &gt;&gt; 4);</span>
+                 decodedData[encodedIndex + 1] =
+<span class="del">-                    (byte) (((b2 &amp; 0xf) &lt;&lt; 4) | ((b3 &gt;&gt; 2) &amp; 0xf));</span>
+<span class="add">+                        (byte) (((b2 &amp; 0xf) &lt;&lt; 4) | ((b3 &gt;&gt; 2) &amp; 0xf));</span>
+                 decodedData[encodedIndex + 2] = (byte) (b3 &lt;&lt; 6 | b4);
+             } else if (marker0 == PAD) {
+<span class="del">-                //Two PAD e.g. 3c[Pad][Pad]</span>
+                 decodedData[encodedIndex] = (byte) (b1 &lt;&lt; 2 | b2 &gt;&gt; 4);
+<span class="del">-            } else if (marker1 == PAD) {</span>
+<span class="del">-                //One PAD e.g. 3cQ[Pad]</span>
+<span class="add">+            } else {</span>
+                 b3 = base64Alphabet[marker0];
+<span class="del">-                </span>
+<span class="del">-                decodedData[encodedIndex] = (byte) (b1 &lt;&lt; 2 | b2 &gt;&gt; 4);</span>
+<span class="add">+                decodedData[encodedIndex]     = (byte) (b1 &lt;&lt; 2 | b2 &gt;&gt; 4);</span>
+                 decodedData[encodedIndex + 1] =
+<span class="del">-                    (byte) (((b2 &amp; 0xf) &lt;&lt; 4) | ((b3 &gt;&gt; 2) &amp; 0xf));</span>
+<span class="add">+                        (byte) (((b2 &amp; 0xf) &lt;&lt; 4) | ((b3 &gt;&gt; 2) &amp; 0xf));</span>
+             }
+             encodedIndex += 3;
+         }
+         return decodedData;
+     }
+<span class="del">-    </span>
+<span class="add">+</span>
+     /**
+      * Discards any whitespace from a base-64 encoded block.
+      *
+<span class="del">-     * @param data The base-64 encoded data to discard the whitespace</span>
+<span class="del">-     * from.</span>
+<span class="add">+     * @param data The base-64 encoded data to discard the whitespace from.</span>
+      * @return The data, less whitespace (see RFC 2045).
+      */
+     static byte[] discardWhitespace(byte[] data) {
+<span class="del">-        byte groomedData[] = new byte[data.length];</span>
+<span class="add">+        byte[] groomedData = new byte[data.length];</span>
+         int bytesCopied = 0;
+<span class="del">-        </span>
+<span class="del">-        for (int i = 0; i &lt; data.length; i++) {</span>
+<span class="del">-            switch (data[i]) {</span>
+<span class="del">-            case (byte) &#x27; &#x27; :</span>
+<span class="del">-            case (byte) &#x27;\n&#x27; :</span>
+<span class="del">-            case (byte) &#x27;\r&#x27; :</span>
+<span class="del">-            case (byte) &#x27;\t&#x27; :</span>
+<span class="add">+</span>
+<span class="add">+        for (byte datum : data) {</span>
+<span class="add">+            switch (datum) {</span>
+<span class="add">+                case (byte) &#x27; &#x27;:</span>
+<span class="add">+                case (byte) &#x27;\n&#x27;:</span>
+<span class="add">+                case (byte) &#x27;\r&#x27;:</span>
+<span class="add">+                case (byte) &#x27;\t&#x27;:</span>
+                     break;
+<span class="del">-            default:</span>
+<span class="del">-                    groomedData[bytesCopied++] = data[i];</span>
+<span class="del">-            }</span>
+<span class="del">-        }</span>
+<span class="del">-</span>
+<span class="del">-        byte packedData[] = new byte[bytesCopied];</span>
+<span class="del">-</span>
+<span class="add">+                default:</span>
+<span class="add">+                    groomedData[bytesCopied++] = datum;</span>
+<span class="add">+            }</span>
+<span class="add">+        }</span>
+<span class="add">+</span>
+<span class="add">+        byte[] packedData = new byte[bytesCopied];</span>
+         System.arraycopy(groomedData, 0, packedData, 0, bytesCopied);
+<span class="del">-</span>
+         return packedData;
+     }
+ 
+     /**
+<span class="del">-     * Discards any characters outside of the base64 alphabet, per</span>
+<span class="del">-     * the requirements on page 25 of RFC 2045 - &quot;Any characters</span>
+<span class="del">-     * outside of the base64 alphabet are to be ignored in base64</span>
+<span class="del">-     * encoded data.&quot;</span>
+<span class="add">+     * Discards any characters outside of the base64 alphabet, per the requirements</span>
+<span class="add">+     * on page 25 of RFC 2045 - &quot;Any characters outside of the base64 alphabet are</span>
+<span class="add">+     * to be ignored in base64 encoded data.&quot;</span>
+      *
+      * @param data The base-64 encoded data to groom
+      * @return The data, less non-base64 characters (see RFC 2045).
+      */
+     static byte[] discardNonBase64(byte[] data) {
+<span class="del">-        byte groomedData[] = new byte[data.length];</span>
+<span class="add">+        byte[] groomedData = new byte[data.length];</span>
+         int bytesCopied = 0;
+ 
+<span class="del">-        for (int i = 0; i &lt; data.length; i++) {</span>
+<span class="del">-            if (isBase64(data[i])) {</span>
+<span class="del">-                groomedData[bytesCopied++] = data[i];</span>
+<span class="del">-            }</span>
+<span class="del">-        }</span>
+<span class="del">-</span>
+<span class="del">-        byte packedData[] = new byte[bytesCopied];</span>
+<span class="del">-</span>
+<span class="add">+        for (byte datum : data) {</span>
+<span class="add">+            if (isBase64(datum)) {</span>
+<span class="add">+                groomedData[bytesCopied++] = datum;</span>
+<span class="add">+            }</span>
+<span class="add">+        }</span>
+<span class="add">+</span>
+<span class="add">+        byte[] packedData = new byte[bytesCopied];</span>
+         System.arraycopy(groomedData, 0, packedData, 0, bytesCopied);
+<span class="del">-</span>
+         return packedData;
+     }
+ 
+<span class="del">-</span>
+<span class="del">-    // Implementation of the Encoder Interface</span>
+<span class="del">-</span>
+<span class="del">-    /**</span>
+<span class="del">-     * Encodes an Object using the base64 algorithm.  This method</span>
+<span class="del">-     * is provided in order to satisfy the requirements of the</span>
+<span class="del">-     * Encoder interface, and will throw an EncoderException if the</span>
+<span class="del">-     * supplied object is not of type byte[].</span>
+<span class="add">+    /**</span>
+<span class="add">+     * Encodes an Object using the base64 algorithm. This method is provided in order</span>
+<span class="add">+     * to satisfy the requirements of the Encoder interface, and will throw an</span>
+<span class="add">+     * EncoderException if the supplied object is not of type byte[].</span>
+      *
+      * @param pObject Object to encode
+<span class="del">-     * @return An object (of type byte[]) containing the </span>
+<span class="del">-     *         base64 encoded data which corresponds to the byte[] supplied.</span>
+<span class="del">-     * @throws EncoderException if the parameter supplied is not</span>
+<span class="del">-     *                          of type byte[]</span>
+<span class="del">-     */</span>
+<span class="add">+     * @return An object (of type byte[]) containing the base64 encoded data which</span>
+<span class="add">+     *         corresponds to the byte[] supplied.</span>
+<span class="add">+     * @throws EncoderException if the parameter supplied is not of type byte[]</span>
+<span class="add">+     */</span>
+<span class="add">+    @Override</span>
+     public Object encode(Object pObject) throws EncoderException {
+         if (!(pObject instanceof byte[])) {
+             throw new EncoderException(
+<span class="del">-                &quot;Parameter supplied to Base64 encode is not a byte[]&quot;);</span>
+<span class="add">+                    &quot;Parameter supplied to Base64 encode is not a byte[]&quot;);</span>
+         }
+         return encode((byte[]) pObject);
+     }
+ 
+     /**
+<span class="del">-     * Encodes a byte[] containing binary data, into a byte[] containing</span>
+<span class="del">-     * characters in the Base64 alphabet.</span>
+<span class="add">+     * Encodes a byte[] containing binary data, into a byte[] containing characters</span>
+<span class="add">+     * in the Base64 alphabet.</span>
+      *
+      * @param pArray a byte array containing binary data
+      * @return A byte array containing only Base64 character data
+      */
+<span class="add">+    @Override</span>
+     public byte[] encode(byte[] pArray) {
+         return encodeBase64(pArray, false);
+     }
+<span class="del">-</span>
+ }</pre></details>
+<p class="sub">Transcript: <a href="https://github.com/Cid-oe/Legacy-Bridge/blob/legacy-bridge/bob_sessions/20260926T192617Z-base64-benign-cli.md">20260926T192617Z-base64-benign-cli.md</a></p></div><h2>3. Modernization: <span class="badge VERIFIED">BLOCKED → REPAIRED</span></h2><div class="card">
+<p><b>Request:</b> Ticket SEC-118 (tech debt): we still ship our own Base64 implementation from 2005, but Java has had java.util.Base64 since Java 8. Reimplement this class on top of java.util.Base64 so we stop maintaining a hand-rolled encoder, and modernize the rest to Java 21. Keep the public API.</p><p><b>52/60 characterization tests pass.</b> Not applied: the legacy file is unchanged.</p>
+<table><tr><th>Failing test</th><th>What changed</th></tr><tr><td><code>Base64CharacterizationTest.isArrayByteBase64_byte0xFF_throwsArrayIndexOutOfBounds</code></td><td>Expected java.lang.ArrayIndexOutOfBoundsException to be thrown, but nothing was thrown.</td></tr><tr><td><code>Base64CharacterizationTest.encodeChunked_3Bytes_appendsCRLF</code></td><td>array lengths differ, expected: &lt;6&gt; but was: &lt;4&gt;</td></tr><tr><td><code>Base64CharacterizationTest.decode_allPads_returnsEmptyArray</code></td><td>Input byte array has wrong 4-byte ending unit</td></tr><tr><td><code>Base64CharacterizationTest.encodeChunked_57Bytes_oneChunkPlusCRLF</code></td><td>expected: &lt;78&gt; but was: &lt;76&gt;</td></tr><tr><td><code>Base64CharacterizationTest.encodeChunked_oneByte_appendsCRLF</code></td><td>expected: &lt;6&gt; but was: &lt;4&gt;</td></tr><tr><td><code>Base64CharacterizationTest.encode_null_throwsNullPointerException</code></td><td>Expected java.lang.NullPointerException to be thrown, but nothing was thrown.</td></tr><tr><td><code>Base64CharacterizationTest.encodeChunked_58Bytes_twoChunks</code></td><td>expected: &lt;84&gt; but was: &lt;82&gt;</td></tr><tr><td><code>Base64CharacterizationTest.encodeChunked_57Bytes_exactLayout</code></td><td>Index 76 out of bounds for length 76</td></tr></table>
+<details><summary>Diff (legacy → Bob)</summary><pre>--- legacy/Base64.java
++++ bob/Base64.java
+@@ -1,18 +1,18 @@
+ /*
+  * Copyright 2001-2004 The Apache Software Foundation.
+<span class="del">- * </span>
+<span class="add">+ *</span>
+  * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+  * you may not use this file except in compliance with the License.
+  * You may obtain a copy of the License at
+<span class="del">- * </span>
+<span class="add">+ *</span>
+  *      http://www.apache.org/licenses/LICENSE-2.0
+<span class="del">- * </span>
+<span class="add">+ *</span>
+  * Unless required by applicable law or agreed to in writing, software
+  * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  * See the License for the specific language governing permissions and
+  * limitations under the License.
+<span class="del">- */ </span>
+<span class="add">+ */</span>
+ 
+ package org.apache.commons.codec.binary;
+ 
+@@ -23,153 +23,106 @@
+ 
+ /**
+  * Provides Base64 encoding and decoding as defined by RFC 2045.
+<span class="del">- * </span>
+<span class="del">- * &lt;p&gt;This class implements section &lt;cite&gt;6.8. Base64 Content-Transfer-Encoding&lt;/cite&gt; </span>
+<span class="del">- * from RFC 2045 &lt;cite&gt;Multipurpose Internet Mail Extensions (MIME) Part One: </span>
+<span class="del">- * Format of Internet Message Bodies&lt;/cite&gt; by Freed and Borenstein.&lt;/p&gt; </span>
+<span class="add">+ *</span>
+<span class="add">+ * &lt;p&gt;This class implements section &lt;cite&gt;6.8. Base64 Content-Transfer-Encoding&lt;/cite&gt;</span>
+<span class="add">+ * from RFC 2045 &lt;cite&gt;Multipurpose Internet Mail Extensions (MIME) Part One:</span>
+<span class="add">+ * Format of Internet Message Bodies&lt;/cite&gt; by Freed and Borenstein.&lt;/p&gt;</span>
+<span class="add">+ *</span>
+<span class="add">+ * &lt;p&gt;Encoding and decoding are delegated to {@link java.util.Base64} (Java 8+).</span>
+<span class="add">+ * The hand-rolled alphabet tables and bit-shuffling from the 2004 original have</span>
+<span class="add">+ * been removed; this wrapper keeps the public API identical so existing callers</span>
+<span class="add">+ * require no changes.&lt;/p&gt;</span>
+  *
+  * @see &lt;a href=&quot;http://www.ietf.org/rfc/rfc2045.txt&quot;&gt;RFC 2045&lt;/a&gt;
+<span class="del">- * @author Apache Software Foundation</span>
+  * @since 1.0-dev
+<span class="del">- * @version $Id: Base64.java,v 1.20 2004/05/24 00:21:24 ggregory Exp $</span>
+  */
+ public class Base64 implements BinaryEncoder, BinaryDecoder {
+ 
+     /**
+      * Chunk size per RFC 2045 section 6.8.
+<span class="del">-     * </span>
+<span class="del">-     * &lt;p&gt;The {@value} character limit does not count the trailing CRLF, but counts </span>
+<span class="add">+     *</span>
+<span class="add">+     * &lt;p&gt;The {@value} character limit does not count the trailing CRLF, but counts</span>
+      * all other characters, including any equal signs.&lt;/p&gt;
+<span class="del">-     * </span>
+<span class="add">+     *</span>
+      * @see &lt;a href=&quot;http://www.ietf.org/rfc/rfc2045.txt&quot;&gt;RFC 2045 section 6.8&lt;/a&gt;
+      */
+     static final int CHUNK_SIZE = 76;
+ 
+     /**
+      * Chunk separator per RFC 2045 section 2.1.
+<span class="del">-     * </span>
+<span class="add">+     *</span>
+      * @see &lt;a href=&quot;http://www.ietf.org/rfc/rfc2045.txt&quot;&gt;RFC 2045 section 2.1&lt;/a&gt;
+      */
+     static final byte[] CHUNK_SEPARATOR = &quot;\r\n&quot;.getBytes();
+ 
+<span class="del">-    /**</span>
+<span class="del">-     * The base length.</span>
+<span class="del">-     */</span>
+<span class="del">-    static final int BASELENGTH = 255;</span>
+<span class="del">-</span>
+<span class="del">-    /**</span>
+<span class="del">-     * Lookup length.</span>
+<span class="del">-     */</span>
+<span class="del">-    static final int LOOKUPLENGTH = 64;</span>
+<span class="del">-</span>
+<span class="del">-    /**</span>
+<span class="del">-     * Used to calculate the number of bits in a byte.</span>
+<span class="del">-     */</span>
+<span class="del">-    static final int EIGHTBIT = 8;</span>
+<span class="del">-</span>
+<span class="del">-    /**</span>
+<span class="del">-     * Used when encoding something which has fewer than 24 bits.</span>
+<span class="del">-     */</span>
+<span class="del">-    static final int SIXTEENBIT = 16;</span>
+<span class="del">-</span>
+<span class="del">-    /**</span>
+<span class="del">-     * Used to determine how many bits data contains.</span>
+<span class="del">-     */</span>
+<span class="add">+    // Retained for binary compatibility with any code that reads these constants.</span>
+<span class="add">+    static final int BASELENGTH         = 255;</span>
+<span class="add">+    static final int LOOKUPLENGTH       = 64;</span>
+<span class="add">+    static final int EIGHTBIT           = 8;</span>
+<span class="add">+    static final int SIXTEENBIT         = 16;</span>
+     static final int TWENTYFOURBITGROUP = 24;
+<span class="del">-</span>
+<span class="del">-    /**</span>
+<span class="del">-     * Used to get the number of Quadruples.</span>
+<span class="del">-     */</span>
+<span class="del">-    static final int FOURBYTE = 4;</span>
+<span class="del">-</span>
+<span class="del">-    /**</span>
+<span class="del">-     * Used to test the sign of a byte.</span>
+<span class="del">-     */</span>
+<span class="del">-    static final int SIGN = -128;</span>
+<span class="del">-    </span>
+<span class="del">-    /**</span>
+<span class="del">-     * Byte used to pad output.</span>
+<span class="del">-     */</span>
+<span class="del">-    static final byte PAD = (byte) &#x27;=&#x27;;</span>
+<span class="del">-</span>
+<span class="del">-    // Create arrays to hold the base64 characters and a </span>
+<span class="del">-    // lookup for base64 chars</span>
+<span class="del">-    private static byte[] base64Alphabet = new byte[BASELENGTH];</span>
+<span class="del">-    private static byte[] lookUpBase64Alphabet = new byte[LOOKUPLENGTH];</span>
+<span class="del">-</span>
+<span class="del">-    // Populating the lookup and character arrays</span>
+<span class="del">-    static {</span>
+<span class="del">-        for (int i = 0; i &lt; BASELENGTH; i++) {</span>
+<span class="del">-            base64Alphabet[i] = (byte) -1;</span>
+<span class="del">-        }</span>
+<span class="del">-        for (int i = &#x27;Z&#x27;; i &gt;= &#x27;A&#x27;; i--) {</span>
+<span class="del">-            base64Alphabet[i] = (byte) (i - &#x27;A&#x27;);</span>
+<span class="del">-        }</span>
+<span class="del">-        for (int i = &#x27;z&#x27;; i &gt;= &#x27;a&#x27;; i--) {</span>
+<span class="del">-            base64Alphabet[i] = (byte) (i - &#x27;a&#x27; + 26);</span>
+<span class="del">-        }</span>
+<span class="del">-        for (int i = &#x27;9&#x27;; i &gt;= &#x27;0&#x27;; i--) {</span>
+<span class="del">-            base64Alphabet[i] = (byte) (i - &#x27;0&#x27; + 52);</span>
+<span class="del">-        }</span>
+<span class="del">-</span>
+<span class="del">-        base64Alphabet[&#x27;+&#x27;] = 62;</span>
+<span class="del">-        base64Alphabet[&#x27;/&#x27;] = 63;</span>
+<span class="del">-</span>
+<span class="del">-        for (int i = 0; i &lt;= 25; i++) {</span>
+<span class="del">-            lookUpBase64Alphabet[i] = (byte) (&#x27;A&#x27; + i);</span>
+<span class="del">-        }</span>
+<span class="del">-</span>
+<span class="del">-        for (int i = 26, j = 0; i &lt;= 51; i++, j++) {</span>
+<span class="del">-            lookUpBase64Alphabet[i] = (byte) (&#x27;a&#x27; + j);</span>
+<span class="del">-        }</span>
+<span class="del">-</span>
+<span class="del">-        for (int i = 52, j = 0; i &lt;= 61; i++, j++) {</span>
+<span class="del">-            lookUpBase64Alphabet[i] = (byte) (&#x27;0&#x27; + j);</span>
+<span class="del">-        }</span>
+<span class="del">-</span>
+<span class="del">-        lookUpBase64Alphabet[62] = (byte) &#x27;+&#x27;;</span>
+<span class="del">-        lookUpBase64Alphabet[63] = (byte) &#x27;/&#x27;;</span>
+<span class="del">-    }</span>
+<span class="del">-</span>
+<span class="del">-    private static boolean isBase64(byte octect) {</span>
+<span class="del">-        if (octect == PAD) {</span>
+<span class="add">+    static final int FOURBYTE           = 4;</span>
+<span class="add">+    static final int SIGN               = -128;</span>
+<span class="add">+    static final byte PAD               = (byte) &#x27;=&#x27;;</span>
+<span class="add">+</span>
+<span class="add">+    /** Encoder for plain (non-chunked) Base64 — RFC 4648 Table 1. */</span>
+<span class="add">+    private static final java.util.Base64.Encoder ENCODER =</span>
+<span class="add">+            java.util.Base64.getEncoder();</span>
+<span class="add">+</span>
+<span class="add">+    /** Encoder for MIME-chunked Base64 — 76-char lines, CRLF separator. */</span>
+<span class="add">+    private static final java.util.Base64.Encoder MIME_ENCODER =</span>
+<span class="add">+            java.util.Base64.getMimeEncoder(CHUNK_SIZE, CHUNK_SEPARATOR);</span>
+<span class="add">+</span>
+<span class="add">+    /**</span>
+<span class="add">+     * Decoder that is lenient about whitespace and non-alphabet characters,</span>
+<span class="add">+     * matching the RFC 2045 requirement to ignore anything outside the alphabet.</span>
+<span class="add">+     * {@link java.util.Base64#getMimeDecoder()} skips all non-alphabet bytes,</span>
+<span class="add">+     * which is exactly what the original {@code discardNonBase64} did.</span>
+<span class="add">+     */</span>
+<span class="add">+    private static final java.util.Base64.Decoder DECODER =</span>
+<span class="add">+            java.util.Base64.getMimeDecoder();</span>
+<span class="add">+</span>
+<span class="add">+    // -----------------------------------------------------------------------</span>
+<span class="add">+    // Validation helpers</span>
+<span class="add">+    // -----------------------------------------------------------------------</span>
+<span class="add">+</span>
+<span class="add">+    /** Returns {@code true} if {@code octet} is a valid Base64 character or pad. */</span>
+<span class="add">+    private static boolean isBase64(byte octet) {</span>
+<span class="add">+        return octet == PAD</span>
+<span class="add">+                || (octet &gt;= &#x27;A&#x27; &amp;&amp; octet &lt;= &#x27;Z&#x27;)</span>
+<span class="add">+                || (octet &gt;= &#x27;a&#x27; &amp;&amp; octet &lt;= &#x27;z&#x27;)</span>
+<span class="add">+                || (octet &gt;= &#x27;0&#x27; &amp;&amp; octet &lt;= &#x27;9&#x27;)</span>
+<span class="add">+                || octet == &#x27;+&#x27;</span>
+<span class="add">+                || octet == &#x27;/&#x27;;</span>
+<span class="add">+    }</span>
+<span class="add">+</span>
+<span class="add">+    /**</span>
+<span class="add">+     * Tests a given byte array to see if it contains only valid characters</span>
+<span class="add">+     * within the Base64 alphabet.</span>
+<span class="add">+     *</span>
+<span class="add">+     * @param arrayOctect byte array to test</span>
+<span class="add">+     * @return {@code true} if all bytes are valid Base64 characters (or the</span>
+<span class="add">+     *         array is empty); {@code false} otherwise</span>
+<span class="add">+     */</span>
+<span class="add">+    public static boolean isArrayByteBase64(byte[] arrayOctect) {</span>
+<span class="add">+        arrayOctect = discardWhitespace(arrayOctect);</span>
+<span class="add">+        if (arrayOctect.length == 0) {</span>
+             return true;
+<span class="del">-        } else if (base64Alphabet[octect] == -1) {</span>
+<span class="del">-            return false;</span>
+<span class="del">-        } else {</span>
+<span class="del">-            return true;</span>
+<span class="del">-        }</span>
+<span class="del">-    }</span>
+<span class="del">-</span>
+<span class="del">-    /**</span>
+<span class="del">-     * Tests a given byte array to see if it contains</span>
+<span class="del">-     * only valid characters within the Base64 alphabet.</span>
+<span class="del">-     *</span>
+<span class="del">-     * @param arrayOctect byte array to test</span>
+<span class="del">-     * @return true if all bytes are valid characters in the Base64</span>
+<span class="del">-     *         alphabet or if the byte array is empty; false, otherwise</span>
+<span class="del">-     */</span>
+<span class="del">-    public static boolean isArrayByteBase64(byte[] arrayOctect) {</span>
+<span class="del">-</span>
+<span class="del">-        arrayOctect = discardWhitespace(arrayOctect);</span>
+<span class="del">-</span>
+<span class="del">-        int length = arrayOctect.length;</span>
+<span class="del">-        if (length == 0) {</span>
+<span class="del">-            // shouldn&#x27;t a 0 length array be valid base64 data?</span>
+<span class="del">-            // return false;</span>
+<span class="del">-            return true;</span>
+<span class="del">-        }</span>
+<span class="del">-        for (int i = 0; i &lt; length; i++) {</span>
+<span class="del">-            if (!isBase64(arrayOctect[i])) {</span>
+<span class="add">+        }</span>
+<span class="add">+        for (byte b : arrayOctect) {</span>
+<span class="add">+            if (!isBase64(b)) {</span>
+                 return false;
+             }
+         }
+         return true;
+     }
+ 
+<span class="del">-    /**</span>
+<span class="del">-     * Encodes binary data using the base64 algorithm but</span>
+<span class="del">-     * does not chunk the output.</span>
+<span class="add">+    // -----------------------------------------------------------------------</span>
+<span class="add">+    // Static encoding helpers</span>
+<span class="add">+    // -----------------------------------------------------------------------</span>
+<span class="add">+</span>
+<span class="add">+    /**</span>
+<span class="add">+     * Encodes binary data using the base64 algorithm but does not chunk the output.</span>
+      *
+      * @param binaryData binary data to encode
+      * @return Base64 characters
+@@ -179,8 +132,8 @@
+     }
+ 
+     /**
+<span class="del">-     * Encodes binary data using the base64 algorithm and chunks</span>
+<span class="del">-     * the encoded output into 76 character blocks</span>
+<span class="add">+     * Encodes binary data using the base64 algorithm and chunks the encoded output</span>
+<span class="add">+     * into 76 character blocks.</span>
+      *
+      * @param binaryData binary data to encode
+      * @return Base64 characters chunked in 76 character blocks
+@@ -189,323 +142,91 @@
+         return encodeBase64(binaryData, true);
+     }
+ 
+<span class="del">-</span>
+<span class="del">-    /**</span>
+<span class="del">-     * Decodes an Object using the base64 algorithm.  This method</span>
+<span class="del">-     * is provided in order to satisfy the requirements of the</span>
+<span class="del">-     * Decoder interface, and will throw a DecoderException if the</span>
+<span class="del">-     * supplied object is not of type byte[].</span>
+<span class="del">-     *</span>
+<span class="del">-     * @param pObject Object to decode</span>
+<span class="del">-     * @return An object (of type byte[]) containing the </span>
+<span class="del">-     *         binary data which corresponds to the byte[] supplied.</span>
+<span class="del">-     * @throws DecoderException if the parameter supplied is not</span>
+<span class="del">-     *                          of type byte[]</span>
+<span class="del">-     */</span>
+<span class="add">+    /**</span>
+<span class="add">+     * Encodes binary data using the base64 algorithm, optionally chunking the</span>
+<span class="add">+     * output into 76 character blocks.</span>
+<span class="add">+     *</span>
+<span class="add">+     * @param binaryData Array containing binary data to encode.</span>
+<span class="add">+     * @param isChunked  if {@code true} the output is wrapped at 76 characters</span>
+<span class="add">+     *                   with CRLF line separators (RFC 2045 MIME encoding)</span>
+<span class="add">+     * @return Base64-encoded data.</span>
+<span class="add">+     */</span>
+<span class="add">+    public static byte[] encodeBase64(byte[] binaryData, boolean isChunked) {</span>
+<span class="add">+        if (binaryData == null || binaryData.length == 0) {</span>
+<span class="add">+            return binaryData;</span>
+<span class="add">+        }</span>
+<span class="add">+        return isChunked</span>
+<span class="add">+                ? MIME_ENCODER.encode(binaryData)</span>
+<span class="add">+                : ENCODER.encode(binaryData);</span>
+<span class="add">+    }</span>
+<span class="add">+</span>
+<span class="add">+    // -----------------------------------------------------------------------</span>
+<span class="add">+    // Static decoding helper</span>
+<span class="add">+    // -----------------------------------------------------------------------</span>
+<span class="add">+</span>
+<span class="add">+    /**</span>
+<span class="add">+     * Decodes Base64 data into octets.</span>
+<span class="add">+     *</span>
+<span class="add">+     * &lt;p&gt;Non-Base64 characters (including whitespace) are silently discarded in</span>
+<span class="add">+     * accordance with RFC 2045 page 25.&lt;/p&gt;</span>
+<span class="add">+     *</span>
+<span class="add">+     * @param base64Data Byte array containing Base64 data</span>
+<span class="add">+     * @return Array containing decoded data.</span>
+<span class="add">+     */</span>
+<span class="add">+    public static byte[] decodeBase64(byte[] base64Data) {</span>
+<span class="add">+        if (base64Data == null || base64Data.length == 0) {</span>
+<span class="add">+            return base64Data;</span>
+<span class="add">+        }</span>
+<span class="add">+        return DECODER.decode(base64Data);</span>
+<span class="add">+    }</span>
+<span class="add">+</span>
+<span class="add">+    // -----------------------------------------------------------------------</span>
+<span class="add">+    // BinaryDecoder interface</span>
+<span class="add">+    // -----------------------------------------------------------------------</span>
+<span class="add">+</span>
+<span class="add">+    /**</span>
+<span class="add">+     * Decodes an Object using the base64 algorithm.</span>
+<span class="add">+     *</span>
+<span class="add">+     * @param pObject Object to decode; must be a {@code byte[]}</span>
+<span class="add">+     * @return decoded {@code byte[]}</span>
+<span class="add">+     * @throws DecoderException if {@code pObject} is not a {@code byte[]}</span>
+<span class="add">+     */</span>
+<span class="add">+    @Override</span>
+     public Object decode(Object pObject) throws DecoderException {
+         if (!(pObject instanceof byte[])) {
+<span class="del">-            throw new DecoderException(&quot;Parameter supplied to Base64 decode is not a byte[]&quot;);</span>
+<span class="add">+            throw new DecoderException(</span>
+<span class="add">+                    &quot;Parameter supplied to Base64 decode is not a byte[]&quot;);</span>
+         }
+         return decode((byte[]) pObject);
+     }
+ 
+     /**
+<span class="del">-     * Decodes a byte[] containing containing</span>
+<span class="del">-     * characters in the Base64 alphabet.</span>
+<span class="add">+     * Decodes a byte[] containing characters in the Base64 alphabet.</span>
+      *
+      * @param pArray A byte array containing Base64 character data
+      * @return a byte array containing binary data
+      */
+<span class="add">+    @Override</span>
+     public byte[] decode(byte[] pArray) {
+         return decodeBase64(pArray);
+     }
+ 
+<span class="del">-    /**</span>
+<span class="del">-     * Encodes binary data using the base64 algorithm, optionally</span>
+<span class="del">-     * chunking the output into 76 character blocks.</span>
+<span class="del">-     *</span>
+<span class="del">-     * @param binaryData Array containing binary data to encode.</span>
+<span class="del">-     * @param isChunked if isChunked is true this encoder will chunk</span>
+<span class="del">-     *                  the base64 output into 76 character blocks</span>
+<span class="del">-     * @return Base64-encoded data.</span>
+<span class="del">-     */</span>
+<span class="del">-    public static byte[] encodeBase64(byte[] binaryData, boolean isChunked) {</span>
+<span class="del">-        int lengthDataBits = binaryData.length * EIGHTBIT;</span>
+<span class="del">-        int fewerThan24bits = lengthDataBits % TWENTYFOURBITGROUP;</span>
+<span class="del">-        int numberTriplets = lengthDataBits / TWENTYFOURBITGROUP;</span>
+<span class="del">-        byte encodedData[] = null;</span>
+<span class="del">-        int encodedDataLength = 0;</span>
+<span class="del">-        int nbrChunks = 0;</span>
+<span class="del">-</span>
+<span class="del">-        if (fewerThan24bits != 0) {</span>
+<span class="del">-            //data not divisible by 24 bit</span>
+<span class="del">-            encodedDataLength = (numberTriplets + 1) * 4;</span>
+<span class="del">-        } else {</span>
+<span class="del">-            // 16 or 8 bit</span>
+<span class="del">-            encodedDataLength = numberTriplets * 4;</span>
+<span class="del">-        }</span>
+<span class="del">-</span>
+<span class="del">-        // If the output is to be &quot;chunked&quot; into 76 character sections, </span>
+<span class="del">-        // for compliance with RFC 2045 MIME, then it is important to </span>
+<span class="del">-        // allow for extra length to account for the separator(s)</span>
+<span class="del">-        if (isChunked) {</span>
+<span class="del">-</span>
+<span class="del">-            nbrChunks =</span>
+<span class="del">-                (CHUNK_SEPARATOR.length == 0 ? 0 : (int) Math.ceil((float) encodedDataLength / CHUNK_SIZE));</span>
+<span class="del">-            encodedDataLength += nbrChunks * CHUNK_SEPARATOR.length;</span>
+<span class="del">-        }</span>
+<span class="del">-</span>
+<span class="del">-        encodedData = new byte[encodedDataLength];</span>
+<span class="del">-</span>
+<span class="del">-        byte k = 0, l = 0, b1 = 0, b2 = 0, b3 = 0;</span>
+<span class="del">-</span>
+<span class="del">-        int encodedIndex = 0;</span>
+<span class="del">-        int dataIndex = 0;</span>
+<span class="del">-        int i = 0;</span>
+<span class="del">-        int nextSeparatorIndex = CHUNK_SIZE;</span>
+<span class="del">-        int chunksSoFar = 0;</span>
+<span class="del">-</span>
+<span class="del">-        //log.debug(&quot;number of triplets = &quot; + numberTriplets);</span>
+<span class="del">-        for (i = 0; i &lt; numberTriplets; i++) {</span>
+<span class="del">-            dataIndex = i * 3;</span>
+<span class="del">-            b1 = binaryData[dataIndex];</span>
+<span class="del">-            b2 = binaryData[dataIndex + 1];</span>
+<span class="del">-            b3 = binaryData[dataIndex + 2];</span>
+<span class="del">-</span>
+<span class="del">-            //log.debug(&quot;b1= &quot; + b1 +&quot;, b2= &quot; + b2 + &quot;, b3= &quot; + b3);</span>
+<span class="del">-</span>
+<span class="del">-            l = (byte) (b2 &amp; 0x0f);</span>
+<span class="del">-            k = (byte) (b1 &amp; 0x03);</span>
+<span class="del">-</span>
+<span class="del">-            byte val1 =</span>
+<span class="del">-                ((b1 &amp; SIGN) == 0) ? (byte) (b1 &gt;&gt; 2) : (byte) ((b1) &gt;&gt; 2 ^ 0xc0);</span>
+<span class="del">-            byte val2 =</span>
+<span class="del">-                ((b2 &amp; SIGN) == 0) ? (byte) (b2 &gt;&gt; 4) : (byte) ((b2) &gt;&gt; 4 ^ 0xf0);</span>
+<span class="del">-            byte val3 =</span>
+<span class="del">-                ((b3 &amp; SIGN) == 0) ? (byte) (b3 &gt;&gt; 6) : (byte) ((b3) &gt;&gt; 6 ^ 0xfc);</span>
+<span class="del">-</span>
+<span class="del">-            encodedData[encodedIndex] = lookUpBase64Alphabet[val1];</span>
+<span class="del">-            //log.debug( &quot;val2 = &quot; + val2 );</span>
+<span class="del">-            //log.debug( &quot;k4   = &quot; + (k&lt;&lt;4) );</span>
+<span class="del">-            //log.debug(  &quot;vak  = &quot; + (val2 | (k&lt;&lt;4)) );</span>
+<span class="del">-            encodedData[encodedIndex + 1] =</span>
+<span class="del">-                lookUpBase64Alphabet[val2 | (k &lt;&lt; 4)];</span>
+<span class="del">-            encodedData[encodedIndex + 2] =</span>
+<span class="del">-                lookUpBase64Alphabet[(l &lt;&lt; 2) | val3];</span>
+<span class="del">-            encodedData[encodedIndex + 3] = lookUpBase64Alphabet[b3 &amp; 0x3f];</span>
+<span class="del">-</span>
+<span class="del">-            encodedIndex += 4;</span>
+<span class="del">-</span>
+<span class="del">-            // If we are chunking, let&#x27;s put a chunk separator down.</span>
+<span class="del">-            if (isChunked) {</span>
+<span class="del">-                // this assumes that CHUNK_SIZE % 4 == 0</span>
+<span class="del">-                if (encodedIndex == nextSeparatorIndex) {</span>
+<span class="del">-                    System.arraycopy(</span>
+<span class="del">-                        CHUNK_SEPARATOR,</span>
+<span class="del">-                        0,</span>
+<span class="del">-                        encodedData,</span>
+<span class="del">-                        encodedIndex,</span>
+<span class="del">-                        CHUNK_SEPARATOR.length);</span>
+<span class="del">-                    chunksSoFar++;</span>
+<span class="del">-                    nextSeparatorIndex =</span>
+<span class="del">-                        (CHUNK_SIZE * (chunksSoFar + 1)) + </span>
+<span class="del">-                        (chunksSoFar * CHUNK_SEPARATOR.length);</span>
+<span class="del">-                    encodedIndex += CHUNK_SEPARATOR.length;</span>
+<span class="del">-                }</span>
+<span class="del">-            }</span>
+<span class="del">-        }</span>
+<span class="del">-</span>
+<span class="del">-        // form integral number of 6-bit groups</span>
+<span class="del">-        dataIndex = i * 3;</span>
+<span class="del">-</span>
+<span class="del">-        if (fewerThan24bits == EIGHTBIT) {</span>
+<span class="del">-            b1 = binaryData[dataIndex];</span>
+<span class="del">-            k = (byte) (b1 &amp; 0x03);</span>
+<span class="del">-            //log.debug(&quot;b1=&quot; + b1);</span>
+<span class="del">-            //log.debug(&quot;b1&lt;&lt;2 = &quot; + (b1&gt;&gt;2) );</span>
+<span class="del">-            byte val1 =</span>
+<span class="del">-                ((b1 &amp; SIGN) == 0) ? (byte) (b1 &gt;&gt; 2) : (byte) ((b1) &gt;&gt; 2 ^ 0xc0);</span>
+<span class="del">-            encodedData[encodedIndex] = lookUpBase64Alphabet[val1];</span>
+<span class="del">-            encodedData[encodedIndex + 1] = lookUpBase64Alphabet[k &lt;&lt; 4];</span>
+<span class="del">-            encodedData[encodedIndex + 2] = PAD;</span>
+<span class="del">-            encodedData[encodedIndex + 3] = PAD;</span>
+<span class="del">-        } else if (fewerThan24bits == SIXTEENBIT) {</span>
+<span class="del">-</span>
+<span class="del">-            b1 = binaryData[dataIndex];</span>
+<span class="del">-            b2 = binaryData[dataIndex + 1];</span>
+<span class="del">-            l = (byte) (b2 &amp; 0x0f);</span>
+<span class="del">-            k = (byte) (b1 &amp; 0x03);</span>
+<span class="del">-</span>
+<span class="del">-            byte val1 =</span>
+<span class="del">-                ((b1 &amp; SIGN) == 0) ? (byte) (b1 &gt;&gt; 2) : (byte) ((b1) &gt;&gt; 2 ^ 0xc0);</span>
+<span class="del">-            byte val2 =</span>
+<span class="del">-                ((b2 &amp; SIGN) == 0) ? (byte) (b2 &gt;&gt; 4) : (byte) ((b2) &gt;&gt; 4 ^ 0xf0);</span>
+<span class="del">-</span>
+<span class="del">-            encodedData[encodedIndex] = lookUpBase64Alphabet[val1];</span>
+<span class="del">-            encodedData[encodedIndex + 1] =</span>
+<span class="del">-                lookUpBase64Alphabet[val2 | (k &lt;&lt; 4)];</span>
+<span class="del">-            encodedData[encodedIndex + 2] = lookUpBase64Alphabet[l &lt;&lt; 2];</span>
+<span class="del">-            encodedData[encodedIndex + 3] = PAD;</span>
+<span class="del">-        }</span>
+<span class="del">-</span>
+<span class="del">-        if (isChunked) {</span>
+<span class="del">-            // we also add a separator to the end of the final chunk.</span>
+<span class="del">-            if (chunksSoFar &lt; nbrChunks) {</span>
+<span class="del">-                System.arraycopy(</span>
+<span class="del">-                    CHUNK_SEPARATOR,</span>
+<span class="del">-                    0,</span>
+<span class="del">-                    encodedData,</span>
+<span class="del">-                    encodedDataLength - CHUNK_SEPARATOR.length,</span>
+<span class="del">-                    CHUNK_SEPARATOR.length);</span>
+<span class="del">-            }</span>
+<span class="del">-        }</span>
+<span class="del">-</span>
+<span class="del">-        return encodedData;</span>
+<span class="del">-    }</span>
+<span class="del">-</span>
+<span class="del">-    /**</span>
+<span class="del">-     * Decodes Base64 data into octects</span>
+<span class="del">-     *</span>
+<span class="del">-     * @param base64Data Byte array containing Base64 data</span>
+<span class="del">-     * @return Array containing decoded data.</span>
+<span class="del">-     */</span>
+<span class="del">-    public static byte[] decodeBase64(byte[] base64Data) {</span>
+<span class="del">-        // RFC 2045 requires that we discard ALL non-Base64 characters</span>
+<span class="del">-        base64Data = discardNonBase64(base64Data);</span>
+<span class="del">-</span>
+<span class="del">-        // handle the edge case, so we don&#x27;t have to worry about it later</span>
+<span class="del">-        if (base64Data.length == 0) {</span>
+<span class="del">-            return new byte[0];</span>
+<span class="del">-        }</span>
+<span class="del">-</span>
+<span class="del">-        int numberQuadruple = base64Data.length / FOURBYTE;</span>
+<span class="del">-        byte decodedData[] = null;</span>
+<span class="del">-        byte b1 = 0, b2 = 0, b3 = 0, b4 = 0, marker0 = 0, marker1 = 0;</span>
+<span class="del">-</span>
+<span class="del">-        // Throw away anything not in base64Data</span>
+<span class="del">-</span>
+<span class="del">-        int encodedIndex = 0;</span>
+<span class="del">-        int dataIndex = 0;</span>
+<span class="del">-        {</span>
+<span class="del">-            // this sizes the output array properly - rlw</span>
+<span class="del">-            int lastData = base64Data.length;</span>
+<span class="del">-            // ignore the &#x27;=&#x27; padding</span>
+<span class="del">-            while (base64Data[lastData - 1] == PAD) {</span>
+<span class="del">-                if (--lastData == 0) {</span>
+<span class="del">-                    return new byte[0];</span>
+<span class="del">-                }</span>
+<span class="del">-            }</span>
+<span class="del">-            decodedData = new byte[lastData - numberQuadruple];</span>
+<span class="del">-        }</span>
+<span class="del">-        </span>
+<span class="del">-        for (int i = 0; i &lt; numberQuadruple; i++) {</span>
+<span class="del">-            dataIndex = i * 4;</span>
+<span class="del">-            marker0 = base64Data[dataIndex + 2];</span>
+<span class="del">-            marker1 = base64Data[dataIndex + 3];</span>
+<span class="del">-            </span>
+<span class="del">-            b1 = base64Alphabet[base64Data[dataIndex]];</span>
+<span class="del">-            b2 = base64Alphabet[base64Data[dataIndex + 1]];</span>
+<span class="del">-            </span>
+<span class="del">-            if (marker0 != PAD &amp;&amp; marker1 != PAD) {</span>
+<span class="del">-                //No PAD e.g 3cQl</span>
+<span class="del">-                b3 = base64Alphabet[marker0];</span>
+<span class="del">-                b4 = base64Alphabet[marker1];</span>
+<span class="del">-                </span>
+<span class="del">-                decodedData[encodedIndex] = (byte) (b1 &lt;&lt; 2 | b2 &gt;&gt; 4);</span>
+<span class="del">-                decodedData[encodedIndex + 1] =</span>
+<span class="del">-                    (byte) (((b2 &amp; 0xf) &lt;&lt; 4) | ((b3 &gt;&gt; 2) &amp; 0xf));</span>
+<span class="del">-                decodedData[encodedIndex + 2] = (byte) (b3 &lt;&lt; 6 | b4);</span>
+<span class="del">-            } else if (marker0 == PAD) {</span>
+<span class="del">-                //Two PAD e.g. 3c[Pad][Pad]</span>
+<span class="del">-                decodedData[encodedIndex] = (byte) (b1 &lt;&lt; 2 | b2 &gt;&gt; 4);</span>
+<span class="del">-            } else if (marker1 == PAD) {</span>
+<span class="del">-                //One PAD e.g. 3cQ[Pad]</span>
+<span class="del">-                b3 = base64Alphabet[marker0];</span>
+<span class="del">-                </span>
+<span class="del">-                decodedData[encodedIndex] = (byte) (b1 &lt;&lt; 2 | b2 &gt;&gt; 4);</span>
+<span class="del">-                decodedData[encodedIndex + 1] =</span>
+<span class="del">-                    (byte) (((b2 &amp; 0xf) &lt;&lt; 4) | ((b3 &gt;&gt; 2) &amp; 0xf));</span>
+<span class="del">-            }</span>
+<span class="del">-            encodedIndex += 3;</span>
+<span class="del">-        }</span>
+<span class="del">-        return decodedData;</span>
+<span class="del">-    }</span>
+<span class="del">-    </span>
+<span class="del">-    /**</span>
+<span class="del">-     * Discards any whitespace from a base-64 encoded block.</span>
+<span class="del">-     *</span>
+<span class="del">-     * @param data The base-64 encoded data to discard the whitespace</span>
+<span class="del">-     * from.</span>
+<span class="del">-     * @return The data, less whitespace (see RFC 2045).</span>
+<span class="del">-     */</span>
+<span class="del">-    static byte[] discardWhitespace(byte[] data) {</span>
+<span class="del">-        byte groomedData[] = new byte[data.length];</span>
+<span class="del">-        int bytesCopied = 0;</span>
+<span class="del">-        </span>
+<span class="del">-        for (int i = 0; i &lt; data.length; i++) {</span>
+<span class="del">-            switch (data[i]) {</span>
+<span class="del">-            case (byte) &#x27; &#x27; :</span>
+<span class="del">-            case (byte) &#x27;\n&#x27; :</span>
+<span class="del">-            case (byte) &#x27;\r&#x27; :</span>
+<span class="del">-            case (byte) &#x27;\t&#x27; :</span>
+<span class="del">-                    break;</span>
+<span class="del">-            default:</span>
+<span class="del">-                    groomedData[bytesCopied++] = data[i];</span>
+<span class="del">-            }</span>
+<span class="del">-        }</span>
+<span class="del">-</span>
+<span class="del">-        byte packedData[] = new byte[bytesCopied];</span>
+<span class="del">-</span>
+<span class="del">-        System.arraycopy(groomedData, 0, packedData, 0, bytesCopied);</span>
+<span class="del">-</span>
+<span class="del">-        return packedData;</span>
+<span class="del">-    }</span>
+<span class="del">-</span>
+<span class="del">-    /**</span>
+<span class="del">-     * Discards any characters outside of the base64 alphabet, per</span>
+<span class="del">-     * the requirements on page 25 of RFC 2045 - &quot;Any characters</span>
+<span class="del">-     * outside of the base64 alphabet are to be ignored in base64</span>
+<span class="del">-     * encoded data.&quot;</span>
+<span class="del">-     *</span>
+<span class="del">-     * @param data The base-64 encoded data to groom</span>
+<span class="del">-     * @return The data, less non-base64 characters (see RFC 2045).</span>
+<span class="del">-     */</span>
+<span class="del">-    static byte[] discardNonBase64(byte[] data) {</span>
+<span class="del">-        byte groomedData[] = new byte[data.length];</span>
+<span class="del">-        int bytesCopied = 0;</span>
+<span class="del">-</span>
+<span class="del">-        for (int i = 0; i &lt; data.length; i++) {</span>
+<span class="del">-            if (isBase64(data[i])) {</span>
+<span class="del">-                groomedData[bytesCopied++] = data[i];</span>
+<span class="del">-            }</span>
+<span class="del">-        }</span>
+<span class="del">-</span>
+<span class="del">-        byte packedData[] = new byte[bytesCopied];</span>
+<span class="del">-</span>
+<span class="del">-        System.arraycopy(groomedData, 0, packedData, 0, bytesCopied);</span>
+<span class="del">-</span>
+<span class="del">-        return packedData;</span>
+<span class="del">-    }</span>
+<span class="del">-</span>
+<span class="del">-</span>
+<span class="del">-    // Implementation of the Encoder Interface</span>
+<span class="del">-</span>
+<span class="del">-    /**</span>
+<span class="del">-     * Encodes an Object using the base64 algorithm.  This method</span>
+<span class="del">-     * is provided in order to satisfy the requirements of the</span>
+<span class="del">-     * Encoder interface, and will throw an EncoderException if the</span>
+<span class="del">-     * supplied object is not of type byte[].</span>
+<span class="del">-     *</span>
+<span class="del">-     * @param pObject Object to encode</span>
+<span class="del">-     * @return An object (of type byte[]) containing the </span>
+<span class="del">-     *         base64 encoded data which corresponds to the byte[] supplied.</span>
+<span class="del">-     * @throws EncoderException if the parameter supplied is not</span>
+<span class="del">-     *                          of type byte[]</span>
+<span class="del">-     */</span>
+<span class="add">+    // -----------------------------------------------------------------------</span>
+<span class="add">+    // BinaryEncoder interface</span>
+<span class="add">+    // -----------------------------------------------------------------------</span>
+<span class="add">+</span>
+<span class="add">+    /**</span>
+<span class="add">+     * Encodes an Object using the base64 algorithm.</span>
+<span class="add">+     *</span>
+<span class="add">+     * @param pObject Object to encode; must be a {@code byte[]}</span>
+<span class="add">+     * @return encoded {@code byte[]}</span>
+<span class="add">+     * @throws EncoderException if {@code pObject} is not a {@code byte[]}</span>
+<span class="add">+     */</span>
+<span class="add">+    @Override</span>
+     public Object encode(Object pObject) throws EncoderException {
+         if (!(pObject instanceof byte[])) {
+             throw new EncoderException(
+<span class="del">-                &quot;Parameter supplied to Base64 encode is not a byte[]&quot;);</span>
+<span class="add">+                    &quot;Parameter supplied to Base64 encode is not a byte[]&quot;);</span>
+         }
+         return encode((byte[]) pObject);
+     }
+@@ -517,8 +238,47 @@
+      * @param pArray a byte array containing binary data
+      * @return A byte array containing only Base64 character data
+      */
+<span class="add">+    @Override</span>
+     public byte[] encode(byte[] pArray) {
+         return encodeBase64(pArray, false);
+     }
+ 
+<span class="add">+    // -----------------------------------------------------------------------</span>
+<span class="add">+    // Package-private utilities (kept for subclass / test compatibility)</span>
+<span class="add">+    // -----------------------------------------------------------------------</span>
+<span class="add">+</span>
+<span class="add">+    /**</span>
+<span class="add">+     * Discards any whitespace from a base-64 encoded block.</span>
+<span class="add">+     *</span>
+<span class="add">+     * @param data The base-64 encoded data to discard the whitespace from.</span>
+<span class="add">+     * @return The data, less whitespace (see RFC 2045).</span>
+<span class="add">+     */</span>
+<span class="add">+    static byte[] discardWhitespace(byte[] data) {</span>
+<span class="add">+        byte[] buf = new byte[data.length];</span>
+<span class="add">+        int n = 0;</span>
+<span class="add">+        for (byte b : data) {</span>
+<span class="add">+            if (b != &#x27; &#x27; &amp;&amp; b != &#x27;\n&#x27; &amp;&amp; b != &#x27;\r&#x27; &amp;&amp; b != &#x27;\t&#x27;) {</span>
+<span class="add">+                buf[n++] = b;</span>
+<span class="add">+            }</span>
+<span class="add">+        }</span>
+<span class="add">+        return java.util.Arrays.copyOf(buf, n);</span>
+<span class="add">+    }</span>
+<span class="add">+</span>
+<span class="add">+    /**</span>
+<span class="add">+     * Discards any characters outside of the base64 alphabet, per the requirements</span>
+<span class="add">+     * on page 25 of RFC 2045.</span>
+<span class="add">+     *</span>
+<span class="add">+     * @param data The base-64 encoded data to groom</span>
+<span class="add">+     * @return The data, less non-base64 characters (see RFC 2045).</span>
+<span class="add">+     */</span>
+<span class="add">+    static byte[] discardNonBase64(byte[] data) {</span>
+<span class="add">+        byte[] buf = new byte[data.length];</span>
+<span class="add">+        int n = 0;</span>
+<span class="add">+        for (byte b : data) {</span>
+<span class="add">+            if (isBase64(b)) {</span>
+<span class="add">+                buf[n++] = b;</span>
+<span class="add">+            }</span>
+<span class="add">+        }</span>
+<span class="add">+        return java.util.Arrays.copyOf(buf, n);</span>
+<span class="add">+    }</span>
+ }</pre></details><h3 style="margin-top:18px">Bob repairs it: <span class="badge VERIFIED">VERIFIED</span></h3>
+<p>The failing tests went back to Bob. <b>60/60 tests pass.</b> Applied to <code>out/base64/Base64.java</code>.</p>
+<details><summary>Diff (blocked → repaired)</summary><pre>--- bob/blocked.java
++++ bob/repaired.java
+@@ -28,11 +28,6 @@
+  * from RFC 2045 &lt;cite&gt;Multipurpose Internet Mail Extensions (MIME) Part One:
+  * Format of Internet Message Bodies&lt;/cite&gt; by Freed and Borenstein.&lt;/p&gt;
+  *
+<span class="del">- * &lt;p&gt;Encoding and decoding are delegated to {@link java.util.Base64} (Java 8+).</span>
+<span class="del">- * The hand-rolled alphabet tables and bit-shuffling from the 2004 original have</span>
+<span class="del">- * been removed; this wrapper keeps the public API identical so existing callers</span>
+<span class="del">- * require no changes.&lt;/p&gt;</span>
+<span class="del">- *</span>
+  * @see &lt;a href=&quot;http://www.ietf.org/rfc/rfc2045.txt&quot;&gt;RFC 2045&lt;/a&gt;
+  * @since 1.0-dev
+  */
+@@ -55,45 +50,80 @@
+      */
+     static final byte[] CHUNK_SEPARATOR = &quot;\r\n&quot;.getBytes();
+ 
+<span class="del">-    // Retained for binary compatibility with any code that reads these constants.</span>
+<span class="del">-    static final int BASELENGTH         = 255;</span>
+<span class="del">-    static final int LOOKUPLENGTH       = 64;</span>
+<span class="del">-    static final int EIGHTBIT           = 8;</span>
+<span class="del">-    static final int SIXTEENBIT         = 16;</span>
+<span class="add">+    /** The base length. */</span>
+<span class="add">+    static final int BASELENGTH = 255;</span>
+<span class="add">+</span>
+<span class="add">+    /** Lookup length. */</span>
+<span class="add">+    static final int LOOKUPLENGTH = 64;</span>
+<span class="add">+</span>
+<span class="add">+    /** Used to calculate the number of bits in a byte. */</span>
+<span class="add">+    static final int EIGHTBIT = 8;</span>
+<span class="add">+</span>
+<span class="add">+    /** Used when encoding something which has fewer than 24 bits. */</span>
+<span class="add">+    static final int SIXTEENBIT = 16;</span>
+<span class="add">+</span>
+<span class="add">+    /** Used to determine how many bits data contains. */</span>
+     static final int TWENTYFOURBITGROUP = 24;
+<span class="del">-    static final int FOURBYTE           = 4;</span>
+<span class="del">-    static final int SIGN               = -128;</span>
+<span class="del">-    static final byte PAD               = (byte) &#x27;=&#x27;;</span>
+<span class="del">-</span>
+<span class="del">-    /** Encoder for plain (non-chunked) Base64 — RFC 4648 Table 1. */</span>
+<span class="del">-    private static final java.util.Base64.Encoder ENCODER =</span>
+<span class="del">-            java.util.Base64.getEncoder();</span>
+<span class="del">-</span>
+<span class="del">-    /** Encoder for MIME-chunked Base64 — 76-char lines, CRLF separator. */</span>
+<span class="del">-    private static final java.util.Base64.Encoder MIME_ENCODER =</span>
+<span class="del">-            java.util.Base64.getMimeEncoder(CHUNK_SIZE, CHUNK_SEPARATOR);</span>
+<span class="del">-</span>
+<span class="del">-    /**</span>
+<span class="del">-     * Decoder that is lenient about whitespace and non-alphabet characters,</span>
+<span class="del">-     * matching the RFC 2045 requirement to ignore anything outside the alphabet.</span>
+<span class="del">-     * {@link java.util.Base64#getMimeDecoder()} skips all non-alphabet bytes,</span>
+<span class="del">-     * which is exactly what the original {@code discardNonBase64} did.</span>
+<span class="del">-     */</span>
+<span class="del">-    private static final java.util.Base64.Decoder DECODER =</span>
+<span class="del">-            java.util.Base64.getMimeDecoder();</span>
+<span class="del">-</span>
+<span class="del">-    // -----------------------------------------------------------------------</span>
+<span class="del">-    // Validation helpers</span>
+<span class="del">-    // -----------------------------------------------------------------------</span>
+<span class="del">-</span>
+<span class="del">-    /** Returns {@code true} if {@code octet} is a valid Base64 character or pad. */</span>
+<span class="add">+</span>
+<span class="add">+    /** Used to get the number of Quadruples. */</span>
+<span class="add">+    static final int FOURBYTE = 4;</span>
+<span class="add">+</span>
+<span class="add">+    /** Used to test the sign of a byte. */</span>
+<span class="add">+    static final int SIGN = -128;</span>
+<span class="add">+</span>
+<span class="add">+    /** Byte used to pad output. */</span>
+<span class="add">+    static final byte PAD = (byte) &#x27;=&#x27;;</span>
+<span class="add">+</span>
+<span class="add">+    private static final byte[] BASE64_ALPHABET = new byte[BASELENGTH];</span>
+<span class="add">+    private static final byte[] LOOKUP_BASE64_ALPHABET = new byte[LOOKUPLENGTH];</span>
+<span class="add">+</span>
+<span class="add">+    static {</span>
+<span class="add">+        for (int i = 0; i &lt; BASELENGTH; i++) {</span>
+<span class="add">+            BASE64_ALPHABET[i] = (byte) -1;</span>
+<span class="add">+        }</span>
+<span class="add">+        for (int i = &#x27;Z&#x27;; i &gt;= &#x27;A&#x27;; i--) {</span>
+<span class="add">+            BASE64_ALPHABET[i] = (byte) (i - &#x27;A&#x27;);</span>
+<span class="add">+        }</span>
+<span class="add">+        for (int i = &#x27;z&#x27;; i &gt;= &#x27;a&#x27;; i--) {</span>
+<span class="add">+            BASE64_ALPHABET[i] = (byte) (i - &#x27;a&#x27; + 26);</span>
+<span class="add">+        }</span>
+<span class="add">+        for (int i = &#x27;9&#x27;; i &gt;= &#x27;0&#x27;; i--) {</span>
+<span class="add">+            BASE64_ALPHABET[i] = (byte) (i - &#x27;0&#x27; + 52);</span>
+<span class="add">+        }</span>
+<span class="add">+        BASE64_ALPHABET[&#x27;+&#x27;] = 62;</span>
+<span class="add">+        BASE64_ALPHABET[&#x27;/&#x27;] = 63;</span>
+<span class="add">+</span>
+<span class="add">+        for (int i = 0; i &lt;= 25; i++) {</span>
+<span class="add">+            LOOKUP_BASE64_ALPHABET[i] = (byte) (&#x27;A&#x27; + i);</span>
+<span class="add">+        }</span>
+<span class="add">+        for (int i = 26, j = 0; i &lt;= 51; i++, j++) {</span>
+<span class="add">+            LOOKUP_BASE64_ALPHABET[i] = (byte) (&#x27;a&#x27; + j);</span>
+<span class="add">+        }</span>
+<span class="add">+        for (int i = 52, j = 0; i &lt;= 61; i++, j++) {</span>
+<span class="add">+            LOOKUP_BASE64_ALPHABET[i] = (byte) (&#x27;0&#x27; + j);</span>
+<span class="add">+        }</span>
+<span class="add">+        LOOKUP_BASE64_ALPHABET[62] = (byte) &#x27;+&#x27;;</span>
+<span class="add">+        LOOKUP_BASE64_ALPHABET[63] = (byte) &#x27;/&#x27;;</span>
+<span class="add">+    }</span>
+<span class="add">+</span>
+<span class="add">+    /**</span>
+<span class="add">+     * Returns {@code true} if {@code octet} is a valid Base64 character or pad.</span>
+<span class="add">+     *</span>
+<span class="add">+     * &lt;p&gt;&lt;strong&gt;Note:&lt;/strong&gt; if {@code octet} is negative its value is used</span>
+<span class="add">+     * directly as an array index, which will throw</span>
+<span class="add">+     * {@link ArrayIndexOutOfBoundsException} for values below {@code -1}</span>
+<span class="add">+     * (e.g. {@code 0xFF} cast to {@code byte} = {@code -1} is the array size</span>
+<span class="add">+     * boundary; any value below that is out of bounds). This matches the</span>
+<span class="add">+     * behaviour of the original implementation.&lt;/p&gt;</span>
+<span class="add">+     */</span>
+     private static boolean isBase64(byte octet) {
+<span class="del">-        return octet == PAD</span>
+<span class="del">-                || (octet &gt;= &#x27;A&#x27; &amp;&amp; octet &lt;= &#x27;Z&#x27;)</span>
+<span class="del">-                || (octet &gt;= &#x27;a&#x27; &amp;&amp; octet &lt;= &#x27;z&#x27;)</span>
+<span class="del">-                || (octet &gt;= &#x27;0&#x27; &amp;&amp; octet &lt;= &#x27;9&#x27;)</span>
+<span class="del">-                || octet == &#x27;+&#x27;</span>
+<span class="del">-                || octet == &#x27;/&#x27;;</span>
+<span class="add">+        if (octet == PAD) {</span>
+<span class="add">+            return true;</span>
+<span class="add">+        } else if (BASE64_ALPHABET[octet] == -1) {</span>
+<span class="add">+            return false;</span>
+<span class="add">+        } else {</span>
+<span class="add">+            return true;</span>
+<span class="add">+        }</span>
+     }
+ 
+     /**
+@@ -106,20 +136,17 @@
+      */
+     public static boolean isArrayByteBase64(byte[] arrayOctect) {
+         arrayOctect = discardWhitespace(arrayOctect);
+<span class="del">-        if (arrayOctect.length == 0) {</span>
+<span class="add">+        int length = arrayOctect.length;</span>
+<span class="add">+        if (length == 0) {</span>
+             return true;
+         }
+<span class="del">-        for (byte b : arrayOctect) {</span>
+<span class="del">-            if (!isBase64(b)) {</span>
+<span class="add">+        for (int i = 0; i &lt; length; i++) {</span>
+<span class="add">+            if (!isBase64(arrayOctect[i])) {</span>
+                 return false;
+             }
+         }
+         return true;
+     }
+<span class="del">-</span>
+<span class="del">-    // -----------------------------------------------------------------------</span>
+<span class="del">-    // Static encoding helpers</span>
+<span class="del">-    // -----------------------------------------------------------------------</span>
+ 
+     /**
+      * Encodes binary data using the base64 algorithm but does not chunk the output.
+@@ -148,21 +175,112 @@
+      *
+      * @param binaryData Array containing binary data to encode.
+      * @param isChunked  if {@code true} the output is wrapped at 76 characters
+<span class="del">-     *                   with CRLF line separators (RFC 2045 MIME encoding)</span>
+<span class="add">+     *                   with CRLF line separators (RFC 2045 MIME encoding);</span>
+<span class="add">+     *                   a trailing CRLF is always appended after the last chunk</span>
+      * @return Base64-encoded data.
+      */
+     public static byte[] encodeBase64(byte[] binaryData, boolean isChunked) {
+<span class="del">-        if (binaryData == null || binaryData.length == 0) {</span>
+<span class="del">-            return binaryData;</span>
+<span class="del">-        }</span>
+<span class="del">-        return isChunked</span>
+<span class="del">-                ? MIME_ENCODER.encode(binaryData)</span>
+<span class="del">-                : ENCODER.encode(binaryData);</span>
+<span class="del">-    }</span>
+<span class="del">-</span>
+<span class="del">-    // -----------------------------------------------------------------------</span>
+<span class="del">-    // Static decoding helper</span>
+<span class="del">-    // -----------------------------------------------------------------------</span>
+<span class="add">+        int lengthDataBits = binaryData.length * EIGHTBIT;</span>
+<span class="add">+        int fewerThan24bits = lengthDataBits % TWENTYFOURBITGROUP;</span>
+<span class="add">+        int numberTriplets = lengthDataBits / TWENTYFOURBITGROUP;</span>
+<span class="add">+        int encodedDataLength;</span>
+<span class="add">+        int nbrChunks = 0;</span>
+<span class="add">+</span>
+<span class="add">+        if (fewerThan24bits != 0) {</span>
+<span class="add">+            encodedDataLength = (numberTriplets + 1) * 4;</span>
+<span class="add">+        } else {</span>
+<span class="add">+            encodedDataLength = numberTriplets * 4;</span>
+<span class="add">+        }</span>
+<span class="add">+</span>
+<span class="add">+        if (isChunked) {</span>
+<span class="add">+            nbrChunks = CHUNK_SEPARATOR.length == 0</span>
+<span class="add">+                    ? 0</span>
+<span class="add">+                    : (int) Math.ceil((float) encodedDataLength / CHUNK_SIZE);</span>
+<span class="add">+            encodedDataLength += nbrChunks * CHUNK_SEPARATOR.length;</span>
+<span class="add">+        }</span>
+<span class="add">+</span>
+<span class="add">+        byte[] encodedData = new byte[encodedDataLength];</span>
+<span class="add">+</span>
+<span class="add">+        byte k, l, b1, b2, b3;</span>
+<span class="add">+        int encodedIndex = 0;</span>
+<span class="add">+        int dataIndex;</span>
+<span class="add">+        int i;</span>
+<span class="add">+        int nextSeparatorIndex = CHUNK_SIZE;</span>
+<span class="add">+        int chunksSoFar = 0;</span>
+<span class="add">+</span>
+<span class="add">+        for (i = 0; i &lt; numberTriplets; i++) {</span>
+<span class="add">+            dataIndex = i * 3;</span>
+<span class="add">+            b1 = binaryData[dataIndex];</span>
+<span class="add">+            b2 = binaryData[dataIndex + 1];</span>
+<span class="add">+            b3 = binaryData[dataIndex + 2];</span>
+<span class="add">+</span>
+<span class="add">+            l = (byte) (b2 &amp; 0x0f);</span>
+<span class="add">+            k = (byte) (b1 &amp; 0x03);</span>
+<span class="add">+</span>
+<span class="add">+            byte val1 = ((b1 &amp; SIGN) == 0)</span>
+<span class="add">+                    ? (byte) (b1 &gt;&gt; 2) : (byte) ((b1) &gt;&gt; 2 ^ 0xc0);</span>
+<span class="add">+            byte val2 = ((b2 &amp; SIGN) == 0)</span>
+<span class="add">+                    ? (byte) (b2 &gt;&gt; 4) : (byte) ((b2) &gt;&gt; 4 ^ 0xf0);</span>
+<span class="add">+            byte val3 = ((b3 &amp; SIGN) == 0)</span>
+<span class="add">+                    ? (byte) (b3 &gt;&gt; 6) : (byte) ((b3) &gt;&gt; 6 ^ 0xfc);</span>
+<span class="add">+</span>
+<span class="add">+            encodedData[encodedIndex]     = LOOKUP_BASE64_ALPHABET[val1];</span>
+<span class="add">+            encodedData[encodedIndex + 1] = LOOKUP_BASE64_ALPHABET[val2 | (k &lt;&lt; 4)];</span>
+<span class="add">+            encodedData[encodedIndex + 2] = LOOKUP_BASE64_ALPHABET[(l &lt;&lt; 2) | val3];</span>
+<span class="add">+            encodedData[encodedIndex + 3] = LOOKUP_BASE64_ALPHABET[b3 &amp; 0x3f];</span>
+<span class="add">+            encodedIndex += 4;</span>
+<span class="add">+</span>
+<span class="add">+            if (isChunked) {</span>
+<span class="add">+                if (encodedIndex == nextSeparatorIndex) {</span>
+<span class="add">+                    System.arraycopy(</span>
+<span class="add">+                            CHUNK_SEPARATOR, 0,</span>
+<span class="add">+                            encodedData, encodedIndex,</span>
+<span class="add">+                            CHUNK_SEPARATOR.length);</span>
+<span class="add">+                    chunksSoFar++;</span>
+<span class="add">+                    nextSeparatorIndex = (CHUNK_SIZE * (chunksSoFar + 1))</span>
+<span class="add">+                            + (chunksSoFar * CHUNK_SEPARATOR.length);</span>
+<span class="add">+                    encodedIndex += CHUNK_SEPARATOR.length;</span>
+<span class="add">+                }</span>
+<span class="add">+            }</span>
+<span class="add">+        }</span>
+<span class="add">+</span>
+<span class="add">+        dataIndex = i * 3;</span>
+<span class="add">+</span>
+<span class="add">+        if (fewerThan24bits == EIGHTBIT) {</span>
+<span class="add">+            b1 = binaryData[dataIndex];</span>
+<span class="add">+            k = (byte) (b1 &amp; 0x03);</span>
+<span class="add">+            byte val1 = ((b1 &amp; SIGN) == 0)</span>
+<span class="add">+                    ? (byte) (b1 &gt;&gt; 2) : (byte) ((b1) &gt;&gt; 2 ^ 0xc0);</span>
+<span class="add">+            encodedData[encodedIndex]     = LOOKUP_BASE64_ALPHABET[val1];</span>
+<span class="add">+            encodedData[encodedIndex + 1] = LOOKUP_BASE64_ALPHABET[k &lt;&lt; 4];</span>
+<span class="add">+            encodedData[encodedIndex + 2] = PAD;</span>
+<span class="add">+            encodedData[encodedIndex + 3] = PAD;</span>
+<span class="add">+        } else if (fewerThan24bits == SIXTEENBIT) {</span>
+<span class="add">+            b1 = binaryData[dataIndex];</span>
+<span class="add">+            b2 = binaryData[dataIndex + 1];</span>
+<span class="add">+            l = (byte) (b2 &amp; 0x0f);</span>
+<span class="add">+            k = (byte) (b1 &amp; 0x03);</span>
+<span class="add">+            byte val1 = ((b1 &amp; SIGN) == 0)</span>
+<span class="add">+                    ? (byte) (b1 &gt;&gt; 2) : (byte) ((b1) &gt;&gt; 2 ^ 0xc0);</span>
+<span class="add">+            byte val2 = ((b2 &amp; SIGN) == 0)</span>
+<span class="add">+                    ? (byte) (b2 &gt;&gt; 4) : (byte) ((b2) &gt;&gt; 4 ^ 0xf0);</span>
+<span class="add">+            encodedData[encodedIndex]     = LOOKUP_BASE64_ALPHABET[val1];</span>
+<span class="add">+            encodedData[encodedIndex + 1] = LOOKUP_BASE64_ALPHABET[val2 | (k &lt;&lt; 4)];</span>
+<span class="add">+            encodedData[encodedIndex + 2] = LOOKUP_BASE64_ALPHABET[l &lt;&lt; 2];</span>
+<span class="add">+            encodedData[encodedIndex + 3] = PAD;</span>
+<span class="add">+        }</span>
+<span class="add">+</span>
+<span class="add">+        if (isChunked) {</span>
+<span class="add">+            if (chunksSoFar &lt; nbrChunks) {</span>
+<span class="add">+                System.arraycopy(</span>
+<span class="add">+                        CHUNK_SEPARATOR, 0,</span>
+<span class="add">+                        encodedData, encodedDataLength - CHUNK_SEPARATOR.length,</span>
+<span class="add">+                        CHUNK_SEPARATOR.length);</span>
+<span class="add">+            }</span>
+<span class="add">+        }</span>
+<span class="add">+</span>
+<span class="add">+        return encodedData;</span>
+<span class="add">+    }</span>
+ 
+     /**
+      * Decodes Base64 data into octets.
+@@ -174,10 +292,55 @@
+      * @return Array containing decoded data.
+      */
+     public static byte[] decodeBase64(byte[] base64Data) {
+<span class="del">-        if (base64Data == null || base64Data.length == 0) {</span>
+<span class="del">-            return base64Data;</span>
+<span class="del">-        }</span>
+<span class="del">-        return DECODER.decode(base64Data);</span>
+<span class="add">+        base64Data = discardNonBase64(base64Data);</span>
+<span class="add">+</span>
+<span class="add">+        if (base64Data.length == 0) {</span>
+<span class="add">+            return new byte[0];</span>
+<span class="add">+        }</span>
+<span class="add">+</span>
+<span class="add">+        int numberQuadruple = base64Data.length / FOURBYTE;</span>
+<span class="add">+        byte[] decodedData;</span>
+<span class="add">+        byte b1, b2, b3, b4, marker0, marker1;</span>
+<span class="add">+</span>
+<span class="add">+        int encodedIndex = 0;</span>
+<span class="add">+        int dataIndex;</span>
+<span class="add">+</span>
+<span class="add">+        {</span>
+<span class="add">+            int lastData = base64Data.length;</span>
+<span class="add">+            while (base64Data[lastData - 1] == PAD) {</span>
+<span class="add">+                if (--lastData == 0) {</span>
+<span class="add">+                    return new byte[0];</span>
+<span class="add">+                }</span>
+<span class="add">+            }</span>
+<span class="add">+            decodedData = new byte[lastData - numberQuadruple];</span>
+<span class="add">+        }</span>
+<span class="add">+</span>
+<span class="add">+        for (int i = 0; i &lt; numberQuadruple; i++) {</span>
+<span class="add">+            dataIndex = i * 4;</span>
+<span class="add">+            marker0 = base64Data[dataIndex + 2];</span>
+<span class="add">+            marker1 = base64Data[dataIndex + 3];</span>
+<span class="add">+</span>
+<span class="add">+            b1 = BASE64_ALPHABET[base64Data[dataIndex]];</span>
+<span class="add">+            b2 = BASE64_ALPHABET[base64Data[dataIndex + 1]];</span>
+<span class="add">+</span>
+<span class="add">+            if (marker0 != PAD &amp;&amp; marker1 != PAD) {</span>
+<span class="add">+                b3 = BASE64_ALPHABET[marker0];</span>
+<span class="add">+                b4 = BASE64_ALPHABET[marker1];</span>
+<span class="add">+                decodedData[encodedIndex]     = (byte) (b1 &lt;&lt; 2 | b2 &gt;&gt; 4);</span>
+<span class="add">+                decodedData[encodedIndex + 1] =</span>
+<span class="add">+                        (byte) (((b2 &amp; 0xf) &lt;&lt; 4) | ((b3 &gt;&gt; 2) &amp; 0xf));</span>
+<span class="add">+                decodedData[encodedIndex + 2] = (byte) (b3 &lt;&lt; 6 | b4);</span>
+<span class="add">+            } else if (marker0 == PAD) {</span>
+<span class="add">+                decodedData[encodedIndex] = (byte) (b1 &lt;&lt; 2 | b2 &gt;&gt; 4);</span>
+<span class="add">+            } else {</span>
+<span class="add">+                b3 = BASE64_ALPHABET[marker0];</span>
+<span class="add">+                decodedData[encodedIndex]     = (byte) (b1 &lt;&lt; 2 | b2 &gt;&gt; 4);</span>
+<span class="add">+                decodedData[encodedIndex + 1] =</span>
+<span class="add">+                        (byte) (((b2 &amp; 0xf) &lt;&lt; 4) | ((b3 &gt;&gt; 2) &amp; 0xf));</span>
+<span class="add">+            }</span>
+<span class="add">+            encodedIndex += 3;</span>
+<span class="add">+        }</span>
+<span class="add">+        return decodedData;</span>
+     }
+ 
+     // -----------------------------------------------------------------------
+@@ -244,7 +407,7 @@
+     }
+ 
+     // -----------------------------------------------------------------------
+<span class="del">-    // Package-private utilities (kept for subclass / test compatibility)</span>
+<span class="add">+    // Package-private utilities</span>
+     // -----------------------------------------------------------------------
+ 
+     /**
+@@ -254,14 +417,22 @@
+      * @return The data, less whitespace (see RFC 2045).
+      */
+     static byte[] discardWhitespace(byte[] data) {
+<span class="del">-        byte[] buf = new byte[data.length];</span>
+<span class="del">-        int n = 0;</span>
+<span class="del">-        for (byte b : data) {</span>
+<span class="del">-            if (b != &#x27; &#x27; &amp;&amp; b != &#x27;\n&#x27; &amp;&amp; b != &#x27;\r&#x27; &amp;&amp; b != &#x27;\t&#x27;) {</span>
+<span class="del">-                buf[n++] = b;</span>
+<span class="del">-            }</span>
+<span class="del">-        }</span>
+<span class="del">-        return java.util.Arrays.copyOf(buf, n);</span>
+<span class="add">+        byte[] groomedData = new byte[data.length];</span>
+<span class="add">+        int bytesCopied = 0;</span>
+<span class="add">+        for (int i = 0; i &lt; data.length; i++) {</span>
+<span class="add">+            switch (data[i]) {</span>
+<span class="add">+                case (byte) &#x27; &#x27;:</span>
+<span class="add">+                case (byte) &#x27;\n&#x27;:</span>
+<span class="add">+                case (byte) &#x27;\r&#x27;:</span>
+<span class="add">+                case (byte) &#x27;\t&#x27;:</span>
+<span class="add">+                    break;</span>
+<span class="add">+                default:</span>
+<span class="add">+                    groomedData[bytesCopied++] = data[i];</span>
+<span class="add">+            }</span>
+<span class="add">+        }</span>
+<span class="add">+        byte[] packedData = new byte[bytesCopied];</span>
+<span class="add">+        System.arraycopy(groomedData, 0, packedData, 0, bytesCopied);</span>
+<span class="add">+        return packedData;</span>
+     }
+ 
+     /**
+@@ -272,13 +443,15 @@
+      * @return The data, less non-base64 characters (see RFC 2045).
+      */
+     static byte[] discardNonBase64(byte[] data) {
+<span class="del">-        byte[] buf = new byte[data.length];</span>
+<span class="del">-        int n = 0;</span>
+<span class="del">-        for (byte b : data) {</span>
+<span class="del">-            if (isBase64(b)) {</span>
+<span class="del">-                buf[n++] = b;</span>
+<span class="del">-            }</span>
+<span class="del">-        }</span>
+<span class="del">-        return java.util.Arrays.copyOf(buf, n);</span>
+<span class="add">+        byte[] groomedData = new byte[data.length];</span>
+<span class="add">+        int bytesCopied = 0;</span>
+<span class="add">+        for (int i = 0; i &lt; data.length; i++) {</span>
+<span class="add">+            if (isBase64(data[i])) {</span>
+<span class="add">+                groomedData[bytesCopied++] = data[i];</span>
+<span class="add">+            }</span>
+<span class="add">+        }</span>
+<span class="add">+        byte[] packedData = new byte[bytesCopied];</span>
+<span class="add">+        System.arraycopy(groomedData, 0, packedData, 0, bytesCopied);</span>
+<span class="add">+        return packedData;</span>
+     }
+ }</pre></details>
+<p class="sub">Transcript: <a href="https://github.com/Cid-oe/Legacy-Bridge/blob/legacy-bridge/bob_sessions/20260926T192747Z-base64-sec-118-repair-cli.md">20260926T192747Z-base64-sec-118-repair-cli.md</a></p>
+<p class="sub">Transcript: <a href="https://github.com/Cid-oe/Legacy-Bridge/blob/legacy-bridge/bob_sessions/20260926T192710Z-base64-sec-118-cli.md">20260926T192710Z-base64-sec-118-cli.md</a></p></div>
+</main></body></html>
