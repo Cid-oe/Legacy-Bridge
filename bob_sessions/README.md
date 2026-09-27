@@ -4,7 +4,9 @@ Every IBM Bob call made by Legacy Bridge, recorded by the harness: prompt, Bob's
 output and the cost Bob reported. The **Task ID** is Bob Shell's own ID for the task (printed in its Task
 Summary), so each row can be matched against `bob --list-tasks`.
 
-Task summary screenshots from Bob Shell: [`screenshots/`](screenshots/).
+Task summary screenshots from Bob Shell: [`screenshots/`](screenshots/). `bob-live-task-summary-base64.png` is a live Bob Shell run inside this repo (Sep 27) reading the real Base64 target, with Bob's Task Summary (cost 0.062, Task ID `a320c14b03b23cc5990719025306542e`).
+
+The pipeline calls Bob Shell headless (`bob -p`) from a temporary working folder, so those runs do not appear in `bob --list-tasks`; their Task Summaries are recorded in each session file below.
 
 | Started (UTC) | Step | Bob Task ID | Bob cost | Duration | |
 |---|---|---|---|---|---|
