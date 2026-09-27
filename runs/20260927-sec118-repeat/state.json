@@ -1,0 +1,142 @@
+{
+  "id": "20260927-sec118-repeat",
+  "target": "base64",
+  "target_title": "Base64 from Apache Commons Codec 1.3 (2005, real open-source code)",
+  "source_file": "src/main/java/org/apache/commons/codec/binary/Base64.java",
+  "modes": [],
+  "characterization": {
+    "test_class": "Base64CharacterizationTest",
+    "test_file": "runs/20260927-sec118-repeat/Base64CharacterizationTest.java",
+    "baseline": {
+      "label": "original",
+      "compiled": true,
+      "tests": 60,
+      "failures": 0,
+      "errors": 0,
+      "failed": [],
+      "log_tail": ""
+    },
+    "fix_rounds": 0,
+    "mutation": {
+      "killed": 5,
+      "total": 5,
+      "mutants": [
+        {
+          "id": "B1-discard-non-base64",
+          "quirk": "Decoding silently skips every non-Base64 character (spaces, line breaks, junk) instead of rejecting it",
+          "killed": true,
+          "by": [
+            "Base64CharacterizationTest.decode_crlfIsStripped",
+            "Base64CharacterizationTest.decode_allNonBase64_returnsEmpty",
+            "Base64CharacterizationTest.decode_spacesAreStripped"
+          ],
+          "compiled": true
+        },
+        {
+          "id": "B2-crlf-separator",
+          "quirk": "Chunked output separates lines with CRLF (\\r\\n), not LF",
+          "killed": true,
+          "by": [
+            "Base64CharacterizationTest.encodeChunked_3Bytes_appendsCRLF",
+            "Base64CharacterizationTest.encodeChunked_57Bytes_oneChunkPlusCRLF",
+            "Base64CharacterizationTest.constants_chunkSeparatorIsCRLF"
+          ],
+          "compiled": true
+        },
+        {
+          "id": "B3-trailing-separator",
+          "quirk": "Chunked output always ends with a line separator, even for short input",
+          "killed": true,
+          "by": [
+            "Base64CharacterizationTest.encodeChunked_3Bytes_appendsCRLF",
+            "Base64CharacterizationTest.encodeChunked_oneByte_appendsCRLF",
+            "Base64CharacterizationTest.encodeChunked_58Bytes_twoChunks"
+          ],
+          "compiled": true
+        },
+        {
+          "id": "B4-whitespace-is-valid",
+          "quirk": "isArrayByteBase64 treats whitespace as valid Base64",
+          "killed": true,
+          "by": [
+            "Base64CharacterizationTest.isArrayByteBase64_allWhitespace_returnsTrue",
+            "Base64CharacterizationTest.isArrayByteBase64_whitespaceStrippedBeforeCheck"
+          ],
+          "compiled": true
+        },
+        {
+          "id": "B5-76-char-lines",
+          "quirk": "Chunked lines are 76 characters (MIME), not 64 (PEM)",
+          "killed": true,
+          "by": [
+            "Base64CharacterizationTest.constants_chunkSizeIs76",
+            "Base64CharacterizationTest.encodeChunked_57Bytes_oneChunkPlusCRLF",
+            "Base64CharacterizationTest.encodeChunked_58Bytes_twoChunks"
+          ],
+          "compiled": true
+        }
+      ]
+    },
+    "mutation_before_hardening": null,
+    "harden_rounds": 0,
+    "control_mutation": {
+      "killed": 5,
+      "total": 5,
+      "mutants": [
+        {
+          "id": "B1-discard-non-base64",
+          "quirk": "Decoding silently skips every non-Base64 character (spaces, line breaks, junk) instead of rejecting it",
+          "killed": true,
+          "by": [
+            "Base64ControlTest.decodeSkipsNonBase64Characters"
+          ],
+          "compiled": true
+        },
+        {
+          "id": "B2-crlf-separator",
+          "quirk": "Chunked output separates lines with CRLF (\\r\\n), not LF",
+          "killed": true,
+          "by": [
+            "Base64ControlTest.chunkedLinesAre76Characters",
+            "Base64ControlTest.chunkedOutputEndsWithCrlf"
+          ],
+          "compiled": true
+        },
+        {
+          "id": "B3-trailing-separator",
+          "quirk": "Chunked output always ends with a line separator, even for short input",
+          "killed": true,
+          "by": [
+            "Base64ControlTest.chunkedLinesAre76Characters",
+            "Base64ControlTest.chunkedOutputEndsWithCrlf"
+          ],
+          "compiled": true
+        },
+        {
+          "id": "B4-whitespace-is-valid",
+          "quirk": "isArrayByteBase64 treats whitespace as valid Base64",
+          "killed": true,
+          "by": [
+            "Base64ControlTest.isArrayByteBase64AllowsWhitespace"
+          ],
+          "compiled": true
+        },
+        {
+          "id": "B5-76-char-lines",
+          "quirk": "Chunked lines are 76 characters (MIME), not 64 (PEM)",
+          "killed": true,
+          "by": [
+            "Base64ControlTest.chunkedLinesAre76Characters"
+          ],
+          "compiled": true
+        }
+      ]
+    },
+    "transcripts": [
+      "bob_sessions/20260926T192119Z-base64-generate-tests-cli.md"
+    ]
+  },
+  "modernizations": [],
+  "bob_calls": 0,
+  "bob_cost": 0
+}
